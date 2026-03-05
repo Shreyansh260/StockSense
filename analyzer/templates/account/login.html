@@ -46,7 +46,6 @@ body::before {
     z-index: 0;
 }
 
-/* GLOW */
 body::after {
     content: '';
     position: fixed;
@@ -113,7 +112,6 @@ body::after {
     line-height: 1.5;
 }
 
-/* GOOGLE BUTTON */
 .btn-google {
     display: flex;
     align-items: center;
@@ -148,7 +146,6 @@ body::after {
     flex-shrink: 0;
 }
 
-/* DIVIDER */
 .divider {
     display: flex;
     align-items: center;
@@ -173,7 +170,6 @@ body::after {
     white-space: nowrap;
 }
 
-/* FEATURES LIST */
 .features-list {
     display: flex;
     flex-direction: column;
@@ -196,7 +192,6 @@ body::after {
     flex-shrink: 0;
 }
 
-/* FOOTER NOTE */
 .login-footer {
     text-align: center;
     margin-top: 20px;
@@ -212,7 +207,6 @@ body::after {
     text-decoration: none;
 }
 
-/* ERROR */
 .error-msg {
     background: rgba(255,68,85,0.1);
     border: 1px solid rgba(255,68,85,0.3);
@@ -246,14 +240,11 @@ body::after {
         <div class="card-sub">Sign in to access AI-powered stock analysis and real-time market sentiment.</div>
 
         {% if form.errors %}
-        <div class="error-msg">
-            ⚠ Sign in failed. Please try again.
-        </div>
+        <div class="error-msg">&#9888; Sign in failed. Please try again.</div>
         {% endif %}
 
-        <!-- GOOGLE SIGN IN -->
-        <a href="{% url 'socialaccount_signup' %}?next=/analyze_stock/" class="btn-google">
-            <!-- Google SVG Logo -->
+        <!-- GOOGLE SIGN IN BUTTON -->
+        <a href="/accounts/google/login/?next=/analyze_stock/" class="btn-google">
             <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -274,11 +265,11 @@ body::after {
             </div>
             <div class="feature-row">
                 <div class="feature-dot"></div>
-                <span>RSI, MACD & MA technical analysis</span>
+                <span>RSI, MACD &amp; MA technical analysis</span>
             </div>
             <div class="feature-row">
                 <div class="feature-dot"></div>
-                <span>Search any stock worldwide — NYSE, NSE, LSE & more</span>
+                <span>Search any stock worldwide — NYSE, NSE, LSE &amp; more</span>
             </div>
             <div class="feature-row">
                 <div class="feature-dot"></div>
@@ -290,7 +281,7 @@ body::after {
 
     <div class="login-footer">
         By signing in you agree to our terms.<br>
-        Not financial advice · <a href="/">Back to home</a>
+        Not financial advice &middot; <a href="/">Back to home</a>
     </div>
 
 </div>

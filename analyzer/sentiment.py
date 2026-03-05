@@ -26,8 +26,8 @@ def _get_classifier():
 
 
 MIN_CONFIDENCE = 0.6
-WORDS_PER_CHUNK = 100
-MAX_CHUNKS_PER_ARTICLE = 4   # reduced from 6 → faster
+WORDS_PER_CHUNK = 60    # shorter chunks → faster tokenization
+MAX_CHUNKS_PER_ARTICLE = 1  # 1 chunk per article → fastest
 
 
 def _build_chunks(content: str) -> list[str]:

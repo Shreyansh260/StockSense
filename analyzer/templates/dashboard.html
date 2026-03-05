@@ -755,6 +755,7 @@ body::before {
         flex-wrap: wrap;
         gap: 10px;
     ">
+        <!-- Left: stock info -->
         <div style="display:flex; align-items:center; gap:14px;">
             <span style="font-size:24px;">📊</span>
             <div>
@@ -762,7 +763,10 @@ body::before {
                 <div style="font-size:22px; font-weight:800; letter-spacing:-0.5px; color:var(--accent);">{{ selected_stock }}</div>
             </div>
         </div>
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+        <!-- Right: stats + cache info + refresh -->
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+
             <div style="text-align:center;">
                 <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;">Period</div>
                 <div style="font-family:var(--font-mono); font-size:14px; color:var(--text); margin-top:3px;">{{ period_label }}</div>
@@ -780,9 +784,13 @@ body::before {
                     {{ recommendation }}
                 </div>
             </div>
+
+
+
+
+
         </div>
     </div>
-
     <div class="meter-card">
         <div class="meter-label">Combined Signal Spectrum — {{ selected_stock }} · {{ period_label }}</div>
         <div class="meter-bar-wrap">

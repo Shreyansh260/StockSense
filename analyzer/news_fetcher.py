@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 # API_KEY      = os.getenv("NEWS_API_KEY")
 NEWS_API_URL = "https://newsapi.org/v2/everything"
-MAX_ARTICLES = 10
-FETCH_TIMEOUT = 5     # seconds per article fetch (reduced from 8)
+MAX_ARTICLES  = 10    # 10 articles for reliable sentiment
+FETCH_TIMEOUT = 3     # 3s timeout per article (fast fail)
 MAX_WORKERS   = 5     # parallel article fetches
 
 
@@ -35,9 +35,9 @@ def _fetch_article_text(url: str) -> str:
 
         body = (
             soup.find("article") or
-            soup.find("div", class_=lambda c: c and any(
+            soup.find("div", class_=lambda c: bool(c and any(
                 k in c.lower() for k in ["article", "content", "story", "body", "post"]
-            )) or
+            ))) or
             soup.find("main")
         )
 
@@ -115,7 +115,7 @@ def get_news(stock_name: str) -> list[dict]:
             return []
 
         # ── Fetch article content IN PARALLEL ────────────────────
-        results  = [None] * len(raw_list)
+        results: list[dict | None] = [None] * len(raw_list)
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_idx = {

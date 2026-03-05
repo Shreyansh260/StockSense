@@ -1,63 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<title>Error - AI Stock Sentiment Analyzer</title>
+<title>Error — StockSense AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
+:root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1f2733;
+    --accent: #00e5a0;
+    --danger: #ff4455;
+    --text: #e8eaf0;
+    --muted: #5a6478;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background: #f5f7fa;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
 }
 
-.header {
-    background: #1f2937;
-    color: white;
-    padding: 20px;
+/* GRID BACKGROUND */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,68,85,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,68,85,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* NAVBAR */
+nav {
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+}
+
+.nav-logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.nav-logo span { color: var(--accent); }
+
+.nav-back {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-back:hover { color: var(--accent); }
+
+/* MAIN */
+main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.error-container {
+    max-width: 580px;
+    width: 100%;
     text-align: center;
 }
 
-.error-box {
-    max-width: 600px;
-    margin: 80px auto;
+/* GLOWING ERROR ICON */
+.error-icon-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 32px;
+}
+
+.error-icon-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, rgba(255,68,85,0.15), transparent 70%);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.error-code {
+    font-family: var(--font-mono);
+    font-size: 96px;
+    font-weight: 500;
+    color: var(--danger);
+    line-height: 1;
+    opacity: 0.15;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.error-emoji {
+    font-size: 72px;
+    display: block;
+    position: relative;
+    z-index: 1;
+    animation: shake 0.5s ease 0.3s both;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(8deg); }
+    60% { transform: rotate(-4deg); }
+    80% { transform: rotate(4deg); }
+}
+
+/* TEXT */
+.error-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--danger);
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+}
+
+.error-title {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.3s forwards;
+}
+
+/* ERROR MESSAGE BOX */
+.error-message-box {
+    background: var(--surface);
+    border: 1px solid rgba(255,68,85,0.2);
+    border-left: 3px solid var(--danger);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0 32px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #b0b8cc;
+    text-align: left;
+    line-height: 1.6;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.4s forwards;
+}
+
+.error-message-box .msg-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--danger);
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* ACTIONS */
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.5s forwards;
+}
+
+.btn-go-back {
+    background: var(--accent);
+    color: #000;
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+}
+
+.btn-go-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,229,160,0.3);
+    color: #000;
+}
+
+.btn-home {
+    background: transparent;
+    color: var(--text);
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid var(--border);
+    transition: all 0.2s;
+}
+
+.btn-home:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* TIPS */
+.tips-card {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: left;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.6s forwards;
+}
+
+.tips-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: #b0b8cc;
+    line-height: 1.5;
+}
+
+.tip-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.tip-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* FOOTER */
+footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
     text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
 }
 
-.error-icon {
-    font-size: 64px;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
-
 </head>
 
 <body>
 
-<div class="header">
-    <h2>AI Stock Market Sentiment Analyzer</h2>
-    <p>Analyze financial news using Transformer NLP</p>
-</div>
+<!-- NAVBAR -->
+<nav>
+    <a href="/" class="nav-logo">Stock<span>Sense</span> AI</a>
+    <a href="/analyze_stock/" class="nav-back">← Back to Dashboard</a>
+</nav>
 
-<div class="container">
-    <div class="error-box">
+<!-- MAIN ERROR CONTENT -->
+<main>
+    <div class="error-container">
 
-        <div class="error-icon">⚠️</div>
+        <div class="error-icon-wrap">
+            <span class="error-emoji">⚠️</span>
+        </div>
 
-        <h3 class="mt-3">Something went wrong</h3>
+        <div class="error-eyebrow">● Error Detected</div>
 
-        <p class="text-muted mt-2">
+        <h1 class="error-title">Something went wrong</h1>
+
+        <div class="error-message-box">
+            <span class="msg-label">Error Message</span>
             {{ message|default:"An unexpected error occurred. Please try again." }}
-        </p>
+        </div>
 
-        <a href="/" class="btn btn-dark mt-3">← Go Back</a>
+        <div class="error-actions">
+            <a href="/analyze_stock/" class="btn-go-back">← Try Again</a>
+            <a href="/" class="btn-home">Go Home</a>
+        </div>
+
+        <!-- TIPS -->
+        <div class="tips-card">
+            <div class="tips-title">💡 Common Fixes</div>
+
+            <div class="tip-item">
+                <span class="tip-icon">🔤</span>
+                <span>Use the exact Yahoo Finance ticker — e.g. <strong style="color:var(--accent)">AAPL</strong> not "Apple", <strong style="color:var(--accent)">RELIANCE.NS</strong> not "Reliance"</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">🇮🇳</span>
+                <span>Indian stocks need the <strong style="color:var(--accent)">.NS</strong> suffix for NSE — e.g. TCS.NS, INFY.NS, SBIN.NS</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">📰</span>
+                <span>No news found? The NewsAPI free plan has a <strong style="color:var(--accent)">100 requests/day</strong> limit — try again tomorrow</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">⏳</span>
+                <span>Choosing a longer period like <strong style="color:var(--accent)">6 months or 1 year</strong> gives more reliable technical signals</span>
+            </div>
+        </div>
 
     </div>
-</div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    StockSense AI · Built with Django · FinBERT · yFinance · Not financial advice
+</footer>
 
 </body>
 </html>

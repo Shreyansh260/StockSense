@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>StockSense AI — Sentiment Analyzer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -18,13 +17,14 @@
     --accent2: #0066ff;
     --danger: #ff4455;
     --warning: #ffaa00;
+    --purple: #a855f7;
     --text: #e8eaf0;
     --muted: #5a6478;
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     background: var(--bg);
@@ -34,7 +34,6 @@ body {
     overflow-x: hidden;
 }
 
-/* ANIMATED BACKGROUND GRID */
 body::before {
     content: '';
     position: fixed;
@@ -83,9 +82,7 @@ body::before {
     animation: fadeUp 0.6s ease 0.2s forwards;
 }
 
-.header h1 span {
-    color: var(--accent);
-}
+.header h1 span { color: var(--accent); }
 
 .header-sub {
     color: var(--muted);
@@ -133,36 +130,58 @@ body::before {
     100% { transform: translateX(-50%); }
 }
 
-/* SEARCH BOX */
-.search-section {
-    margin-bottom: 28px;
+/* SELECTOR PANEL */
+.selector-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 32px;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.4s forwards;
 }
 
-.search-wrapper {
-    position: relative;
-    max-width: 560px;
-    margin: 0 auto;
+/* ── WORLDWIDE SEARCH ──────────────────────────────────── */
+.search-section-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.search-icon {
+.search-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.search-box-wrap {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.search-globe-icon {
     position: absolute;
-    left: 18px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--muted);
     font-size: 18px;
     pointer-events: none;
     z-index: 2;
 }
 
-#searchInput {
+#globalSearchInput {
     width: 100%;
-    background: var(--surface);
+    background: var(--surface2);
     border: 1.5px solid var(--border);
     border-radius: 14px;
-    padding: 14px 18px 14px 50px;
+    padding: 14px 48px 14px 50px;
     color: var(--text);
     font-family: var(--font-mono);
     font-size: 14px;
@@ -170,27 +189,158 @@ body::before {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-#searchInput:focus {
+#globalSearchInput:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
 }
 
-#searchInput::placeholder { color: var(--muted); }
+#globalSearchInput::placeholder { color: var(--muted); }
 
-.search-clear {
+.search-spinner {
     position: absolute;
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+}
+
+/* AUTOCOMPLETE DROPDOWN */
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+
+.autocomplete-dropdown.open { display: block; }
+
+.autocomplete-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+}
+
+.autocomplete-item:last-child { border-bottom: none; }
+
+.autocomplete-item:hover,
+.autocomplete-item.highlighted {
+    background: rgba(0,229,160,0.06);
+}
+
+.autocomplete-left { display: flex; flex-direction: column; gap: 2px; }
+
+.autocomplete-ticker {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.autocomplete-name {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.autocomplete-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+
+.autocomplete-exchange {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+.autocomplete-type {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.autocomplete-no-results {
+    padding: 16px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.search-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    padding-left: 4px;
+}
+
+/* SELECTED STOCK DISPLAY */
+.selected-stock-display {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0,229,160,0.06);
+    border: 1.5px solid rgba(0,229,160,0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-top: 12px;
+}
+
+.selected-stock-display.visible { display: flex; }
+
+.selected-stock-ticker {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.selected-stock-name {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.selected-stock-exchange {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-left: auto;
+}
+
+.selected-clear {
     background: none;
     border: none;
     color: var(--muted);
     font-size: 18px;
     cursor: pointer;
-    display: none;
-    z-index: 2;
     line-height: 1;
+    padding: 0 4px;
+    transition: color 0.2s;
 }
+
+.selected-clear:hover { color: var(--danger); }
 
 /* REGION LABEL */
 .region-label {
@@ -215,15 +365,15 @@ body::before {
 /* STOCK GRID */
 .stock-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 10px;
 }
 
 .stock-card {
-    background: var(--surface);
+    background: var(--surface2);
     border: 1.5px solid var(--border);
     border-radius: 14px;
-    padding: 18px 12px 14px;
+    padding: 16px 10px 12px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -241,64 +391,50 @@ body::before {
     transition: opacity 0.3s;
 }
 
-.stock-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,229,160,0.12);
-}
-
+.stock-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,229,160,0.12); }
 .stock-card:hover::before { opacity: 1; }
-
-.stock-card.selected {
-    border-color: var(--accent);
-    background: rgba(0,229,160,0.06);
-    box-shadow: 0 0 0 3px rgba(0,229,160,0.15), 0 8px 24px rgba(0,229,160,0.1);
-}
-
+.stock-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.06); box-shadow: 0 0 0 3px rgba(0,229,160,0.15); }
 .stock-card.selected::before { opacity: 1; }
 
-.stock-card.hidden { display: none; }
-
-.stock-logo {
-    font-size: 30px;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.stock-ticker {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    letter-spacing: 0.5px;
-}
-
-.stock-name {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 3px;
-}
-
+.stock-logo { font-size: 26px; margin-bottom: 6px; display: block; }
+.stock-ticker { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text); }
+.stock-name { font-size: 10px; color: var(--muted); margin-top: 2px; }
 .stock-card.selected .stock-ticker { color: var(--accent); }
 
-/* SELECTED INDICATOR */
-.selected-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(0,229,160,0.1);
-    border: 1px solid rgba(0,229,160,0.3);
-    border-radius: 8px;
-    padding: 8px 16px;
+/* PERIOD SELECTOR */
+.period-label-title {
     font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--accent);
-    margin-bottom: 20px;
-    opacity: 0;
-    transition: opacity 0.3s;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 10px;
 }
 
-.selected-badge.visible { opacity: 1; }
+.period-selector {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.period-btn {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.period-btn:hover { border-color: var(--accent); color: var(--accent); }
+.period-btn.active { background: rgba(0,229,160,0.1); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,229,160,0.15); }
 
 /* ANALYZE BUTTON */
 .analyze-btn {
@@ -328,41 +464,12 @@ body::before {
     transition: transform 0.5s;
 }
 
-.analyze-btn.active {
-    opacity: 1;
-    pointer-events: all;
-    box-shadow: 0 4px 20px rgba(0,229,160,0.3);
-}
-
-.analyze-btn.active:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(0,229,160,0.4);
-}
-
+.analyze-btn.active { opacity: 1; pointer-events: all; box-shadow: 0 4px 20px rgba(0,229,160,0.3); }
+.analyze-btn.active:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,229,160,0.4); }
 .analyze-btn.active:hover::after { transform: translateX(100%); }
 
-/* SELECTOR PANEL */
-.selector-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 32px;
-    opacity: 0;
-    animation: fadeUp 0.6s ease 0.5s forwards;
-}
-
 /* RESULT CARDS */
-.results-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
-}
-
-@media (max-width: 640px) {
-    .results-row { grid-template-columns: 1fr; }
-}
+.results-row { display: grid; gap: 14px; margin-bottom: 14px; }
 
 .result-card {
     background: var(--surface);
@@ -372,237 +479,51 @@ body::before {
     position: relative;
     overflow: hidden;
     animation: fadeUp 0.5s ease forwards;
-}
-
-.result-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-}
-
-.result-card.score-card::before { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
-.result-card.rec-card::before { background: linear-gradient(90deg, var(--accent), #00ffcc); }
-.result-card.price-card::before { background: linear-gradient(90deg, var(--warning), #ff6600); }
-
-.result-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-}
-
-.result-value {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    line-height: 1;
-}
-
-.result-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 6px;
-    font-family: var(--font-mono);
-}
-
-.badge-buy {
-    background: rgba(0,229,160,0.15);
-    color: var(--accent);
-    border: 1px solid rgba(0,229,160,0.3);
-    border-radius: 8px;
-    padding: 4px 14px;
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.badge-sell {
-    background: rgba(255,68,85,0.15);
-    color: var(--danger);
-    border: 1px solid rgba(255,68,85,0.3);
-    border-radius: 8px;
-    padding: 4px 14px;
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.badge-hold {
-    background: rgba(255,170,0,0.15);
-    color: var(--warning);
-    border: 1px solid rgba(255,170,0,0.3);
-    border-radius: 8px;
-    padding: 4px 14px;
-    font-size: 22px;
-    font-weight: 800;
-}
-
-/* SENTIMENT METER */
-.meter-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 22px 28px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s ease 0.1s forwards;
     opacity: 0;
 }
 
-.meter-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 14px;
-}
+.result-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.result-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+.result-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--font-mono); }
 
-.meter-bar-wrap {
-    background: var(--surface2);
-    border-radius: 99px;
-    height: 10px;
-    position: relative;
-    overflow: hidden;
-}
+.badge-buy { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
+.badge-sell { background: rgba(255,68,85,0.15); color: var(--danger); border: 1px solid rgba(255,68,85,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
+.badge-hold { background: rgba(255,170,0,0.15); color: var(--warning); border: 1px solid rgba(255,170,0,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
 
-.meter-bar-fill {
-    height: 100%;
-    border-radius: 99px;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-}
-
-.meter-labels {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 6px;
-}
+/* METER */
+.meter-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 28px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.1s forwards; opacity: 0; }
+.meter-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.meter-bar-wrap { background: var(--surface2); border-radius: 99px; height: 10px; overflow: hidden; }
+.meter-bar-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+.meter-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 6px; }
 
 /* CHART */
-.chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s ease 0.2s forwards;
-    opacity: 0;
-}
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.2s forwards; opacity: 0; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+.chart-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
 
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.chart-title {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-}
-
-.chart-stock-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-    font-family: var(--font-mono);
-}
+/* SIGNAL PILLS */
+.signal-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.signal-pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 6px; }
+.signal-bull { background: rgba(0,229,160,0.12); color: var(--accent); border: 1px solid rgba(0,229,160,0.25); }
+.signal-bear { background: rgba(255,68,85,0.12); color: var(--danger); border: 1px solid rgba(255,68,85,0.25); }
+.signal-neut { background: rgba(255,170,0,0.12); color: var(--warning); border: 1px solid rgba(255,170,0,0.25); }
 
 /* NEWS */
-.news-card-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    animation: fadeUp 0.5s ease 0.3s forwards;
-    opacity: 0;
-}
-
-.news-item {
-    padding: 14px 16px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    color: #b0b8cc;
-    background: var(--surface2);
-    border-left: 3px solid var(--border);
-    transition: border-color 0.2s, background 0.2s;
-    line-height: 1.5;
-}
-
-.news-item:hover {
-    border-left-color: var(--accent);
-    background: rgba(0,229,160,0.04);
-    color: var(--text);
-}
-
+.news-card-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; animation: fadeUp 0.5s ease 0.3s forwards; opacity: 0; }
+.news-item { padding: 14px 16px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #b0b8cc; background: var(--surface2); border-left: 3px solid var(--border); transition: border-color 0.2s, background 0.2s; line-height: 1.5; }
+.news-item:hover { border-left-color: var(--accent); background: rgba(0,229,160,0.04); color: var(--text); }
 .news-item:last-child { margin-bottom: 0; }
 
-/* LOADING OVERLAY */
-#loadingOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,12,16,0.92);
-    z-index: 999;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
+/* LOADING */
+#loadingOverlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,0.92); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
 #loadingOverlay.show { display: flex; }
+.spinner { width: 48px; height: 48px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-text { font-family: var(--font-mono); font-size: 13px; color: var(--muted); letter-spacing: 2px; }
+.loading-steps { font-family: var(--font-mono); font-size: 11px; color: var(--accent); opacity: 0.7; }
 
-.spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-.loading-text {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 2px;
-}
-
-.loading-steps {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--accent);
-    opacity: 0.7;
-}
-
-/* NO RESULTS */
-.no-results {
-    text-align: center;
-    padding: 32px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    display: none;
-}
-
-/* ANIMATIONS */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* SCROLLBAR */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -618,11 +539,29 @@ body::before {
     <div class="loading-steps" id="loadingStep">Fetching news articles...</div>
 </div>
 
+<!-- NAVBAR -->
+<nav style="position:sticky;top:0;z-index:50;background:rgba(10,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:18px;font-weight:800;letter-spacing:-0.5px;">Stock<span style="color:var(--accent)">Sense</span> AI</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,229,160,0.15);border:1.5px solid rgba(0,229,160,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);">{{ request.user.first_name|first|upper }}</div>
+            <div>
+                <div style="font-size:13px;font-weight:600;">{{ request.user.get_full_name|default:request.user.email }}</div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">{{ request.user.email }}</div>
+            </div>
+        </div>
+        <form method="POST" action="/accounts/logout/" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" style="background:rgba(255,68,85,0.1);border:1px solid rgba(255,68,85,0.3);color:var(--danger);border-radius:8px;padding:7px 14px;font-family:var(--font-mono);font-size:11px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">Sign Out</button>
+        </form>
+    </div>
+</nav>
+
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="padding-top:28px;">
     <div class="header-eyebrow">● Live Market Intelligence</div>
     <h1>Stock<span>Sense</span> AI</h1>
-    <p class="header-sub">FinBERT-powered sentiment analysis for smarter trading decisions</p>
+    <p class="header-sub">FinBERT + Technical Analysis · Search any stock worldwide</p>
 </div>
 
 <!-- TICKER TAPE -->
@@ -638,7 +577,6 @@ body::before {
         <span class="ticker-item">TCS <span class="down">▼ 0.4%</span></span>
         <span class="ticker-item">INFY <span class="up">▲ 0.9%</span></span>
         <span class="ticker-item">HDFCBANK <span class="up">▲ 1.3%</span></span>
-        <!-- duplicate for seamless loop -->
         <span class="ticker-item">AAPL <span class="up">▲ 1.2%</span></span>
         <span class="ticker-item">TSLA <span class="down">▼ 0.8%</span></span>
         <span class="ticker-item">NVDA <span class="up">▲ 2.4%</span></span>
@@ -654,111 +592,144 @@ body::before {
 
 <div class="container-main">
 
-    <!-- SEARCH + STOCK SELECTOR -->
-    <div class="search-section">
-        <div class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Search stocks... (e.g. Apple, Tesla, TCS)">
-            <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
-        </div>
-        <div class="no-results" id="noResults">No stocks found for your search.</div>
-    </div>
-
     <div class="selector-panel">
 
-        <div class="region-label">🇺🇸 US Markets</div>
-        <div class="stock-grid" id="usGrid">
-            <div class="stock-card" data-ticker="AAPL" data-name="Apple" onclick="selectStock(this, 'AAPL')">
-                <span class="stock-logo">🍎</span>
-                <div class="stock-ticker">AAPL</div>
-                <div class="stock-name">Apple Inc.</div>
+        <!-- ── WORLDWIDE SEARCH ─────────────────────────── -->
+        <div class="search-section-title">🌍 Search Any Stock Worldwide</div>
+
+        <div class="search-box-wrap" id="searchBoxWrap">
+            <span class="search-globe-icon">🔍</span>
+            <input
+                type="text"
+                id="globalSearchInput"
+                placeholder="Type company name or ticker... (e.g. Samsung, Nestlé, Tata Motors)"
+                autocomplete="off"
+            >
+            <div class="search-spinner" id="searchSpinner"></div>
+            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+        </div>
+
+        <div class="search-hint" id="searchHint">
+            Search returns results from NYSE, NASDAQ, NSE, BSE, LSE, TSE and more.
+        </div>
+
+        <!-- Selected stock display -->
+        <div class="selected-stock-display" id="selectedStockDisplay">
+            <div>
+                <div class="selected-stock-ticker" id="displayTicker">—</div>
+                <div class="selected-stock-name" id="displayName">—</div>
             </div>
-            <div class="stock-card" data-ticker="TSLA" data-name="Tesla" onclick="selectStock(this, 'TSLA')">
-                <span class="stock-logo">⚡</span>
-                <div class="stock-ticker">TSLA</div>
-                <div class="stock-name">Tesla</div>
-            </div>
-            <div class="stock-card" data-ticker="GOOGL" data-name="Google Alphabet" onclick="selectStock(this, 'GOOGL')">
-                <span class="stock-logo">🔍</span>
-                <div class="stock-ticker">GOOGL</div>
-                <div class="stock-name">Alphabet</div>
-            </div>
-            <div class="stock-card" data-ticker="MSFT" data-name="Microsoft" onclick="selectStock(this, 'MSFT')">
-                <span class="stock-logo">🪟</span>
-                <div class="stock-ticker">MSFT</div>
-                <div class="stock-name">Microsoft</div>
-            </div>
-            <div class="stock-card" data-ticker="AMZN" data-name="Amazon" onclick="selectStock(this, 'AMZN')">
-                <span class="stock-logo">📦</span>
-                <div class="stock-ticker">AMZN</div>
-                <div class="stock-name">Amazon</div>
-            </div>
-            <div class="stock-card" data-ticker="NVDA" data-name="Nvidia" onclick="selectStock(this, 'NVDA')">
-                <span class="stock-logo">🎮</span>
-                <div class="stock-ticker">NVDA</div>
-                <div class="stock-name">Nvidia</div>
+            <div class="selected-stock-exchange" id="displayExchange">—</div>
+            <button class="selected-clear" onclick="clearSelection()" title="Clear">✕</button>
+        </div>
+
+        <!-- ── POPULAR SHORTCUTS ────────────────────────── -->
+        <div class="region-label" style="margin-top:28px;">⭐ Popular Shortcuts</div>
+
+        <div style="margin-bottom:10px;">
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:8px;">🇺🇸 US</div>
+            <div class="stock-grid">
+                <div class="stock-card" onclick="selectFromCard(this,'AAPL','Apple Inc.','NASDAQ')">
+                    <span class="stock-logo">🍎</span>
+                    <div class="stock-ticker">AAPL</div>
+                    <div class="stock-name">Apple</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'TSLA','Tesla','NASDAQ')">
+                    <span class="stock-logo">⚡</span>
+                    <div class="stock-ticker">TSLA</div>
+                    <div class="stock-name">Tesla</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'GOOGL','Alphabet','NASDAQ')">
+                    <span class="stock-logo">🔍</span>
+                    <div class="stock-ticker">GOOGL</div>
+                    <div class="stock-name">Alphabet</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'MSFT','Microsoft','NASDAQ')">
+                    <span class="stock-logo">🪟</span>
+                    <div class="stock-ticker">MSFT</div>
+                    <div class="stock-name">Microsoft</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'AMZN','Amazon','NASDAQ')">
+                    <span class="stock-logo">📦</span>
+                    <div class="stock-ticker">AMZN</div>
+                    <div class="stock-name">Amazon</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'NVDA','Nvidia','NASDAQ')">
+                    <span class="stock-logo">🎮</span>
+                    <div class="stock-ticker">NVDA</div>
+                    <div class="stock-name">Nvidia</div>
+                </div>
             </div>
         </div>
 
-        <div class="region-label">🇮🇳 Indian Markets</div>
-        <div class="stock-grid" id="inGrid">
-            <div class="stock-card" data-ticker="RELIANCE.NS" data-name="Reliance Industries" onclick="selectStock(this, 'RELIANCE.NS')">
-                <span class="stock-logo">🛢️</span>
-                <div class="stock-ticker">RELIANCE</div>
-                <div class="stock-name">Reliance Ind.</div>
+        <div style="margin-bottom:10px;">
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:8px;">🇮🇳 India</div>
+            <div class="stock-grid">
+                <div class="stock-card" onclick="selectFromCard(this,'RELIANCE.NS','Reliance','NSE')">
+                    <span class="stock-logo">🛢️</span>
+                    <div class="stock-ticker">RELIANCE</div>
+                    <div class="stock-name">Reliance</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'TCS.NS','Tata Consult.','NSE')">
+                    <span class="stock-logo">💻</span>
+                    <div class="stock-ticker">TCS</div>
+                    <div class="stock-name">TCS</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'INFY.NS','Infosys','NSE')">
+                    <span class="stock-logo">🌐</span>
+                    <div class="stock-ticker">INFY</div>
+                    <div class="stock-name">Infosys</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'HDFCBANK.NS','HDFC Bank','NSE')">
+                    <span class="stock-logo">🏦</span>
+                    <div class="stock-ticker">HDFCBANK</div>
+                    <div class="stock-name">HDFC Bank</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'SBIN.NS','SBI','NSE')">
+                    <span class="stock-logo">🇮🇳</span>
+                    <div class="stock-ticker">SBIN</div>
+                    <div class="stock-name">SBI</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'ICICIBANK.NS','ICICI Bank','NSE')">
+                    <span class="stock-logo">🏧</span>
+                    <div class="stock-ticker">ICICIBANK</div>
+                    <div class="stock-name">ICICI Bank</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'BAJFINANCE.NS','Bajaj Finance','NSE')">
+                    <span class="stock-logo">💰</span>
+                    <div class="stock-ticker">BAJFINANCE</div>
+                    <div class="stock-name">Bajaj Finance</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'MARUTI.NS','Maruti Suzuki','NSE')">
+                    <span class="stock-logo">🚗</span>
+                    <div class="stock-ticker">MARUTI</div>
+                    <div class="stock-name">Maruti</div>
+                </div>
+                <div class="stock-card" onclick="selectFromCard(this,'HINDUNILVR.NS','HUL','NSE')">
+                    <span class="stock-logo">🧴</span>
+                    <div class="stock-ticker">HINDUNILVR</div>
+                    <div class="stock-name">HUL</div>
+                </div>
             </div>
-            <div class="stock-card" data-ticker="TCS.NS" data-name="TCS Tata Consultancy" onclick="selectStock(this, 'TCS.NS')">
-                <span class="stock-logo">💻</span>
-                <div class="stock-ticker">TCS</div>
-                <div class="stock-name">Tata Consult.</div>
-            </div>
-            <div class="stock-card" data-ticker="INFY.NS" data-name="Infosys" onclick="selectStock(this, 'INFY.NS')">
-                <span class="stock-logo">🌐</span>
-                <div class="stock-ticker">INFY</div>
-                <div class="stock-name">Infosys</div>
-            </div>
-            <div class="stock-card" data-ticker="HDFCBANK.NS" data-name="HDFC Bank" onclick="selectStock(this, 'HDFCBANK.NS')">
-                <span class="stock-logo">🏦</span>
-                <div class="stock-ticker">HDFCBANK</div>
-                <div class="stock-name">HDFC Bank</div>
-            </div>
-            <div class="stock-card" data-ticker="ICICIBANK.NS" data-name="ICICI Bank" onclick="selectStock(this, 'ICICIBANK.NS')">
-                <span class="stock-logo">🏧</span>
-                <div class="stock-ticker">ICICIBANK</div>
-                <div class="stock-name">ICICI Bank</div>
-            </div>
-            <div class="stock-card" data-ticker="SBIN.NS" data-name="State Bank India SBI" onclick="selectStock(this, 'SBIN.NS')">
-                <span class="stock-logo">🇮🇳</span>
-                <div class="stock-ticker">SBIN</div>
-                <div class="stock-name">SBI</div>
-            </div>
-            <div class="stock-card" data-ticker="BAJFINANCE.NS" data-name="Bajaj Finance" onclick="selectStock(this, 'BAJFINANCE.NS')">
-                <span class="stock-logo">💰</span>
-                <div class="stock-ticker">BAJFINANCE</div>
-                <div class="stock-name">Bajaj Finance</div>
-            </div>
-            <div class="stock-card" data-ticker="MARUTI.NS" data-name="Maruti Suzuki" onclick="selectStock(this, 'MARUTI.NS')">
-                <span class="stock-logo">🚗</span>
-                <div class="stock-ticker">MARUTI</div>
-                <div class="stock-name">Maruti Suzuki</div>
-            </div>
-            <div class="stock-card" data-ticker="HINDUNILVR.NS" data-name="Hindustan Unilever HUL" onclick="selectStock(this, 'HINDUNILVR.NS')">
-                <span class="stock-logo">🧴</span>
-                <div class="stock-ticker">HINDUNILVR</div>
-                <div class="stock-name">HUL</div>
+        </div>
+
+        <!-- PERIOD SELECTOR -->
+        <div class="mt-4">
+            <div class="period-label-title">Analysis Period</div>
+            <div class="period-selector">
+                <div class="period-btn {% if selected_period == '3mo' %}active{% endif %}" onclick="setPeriod(this,'3mo')">3 Months</div>
+                <div class="period-btn {% if selected_period == '6mo' or not selected_period %}active{% endif %}" onclick="setPeriod(this,'6mo')">6 Months</div>
+                <div class="period-btn {% if selected_period == '1y' %}active{% endif %}" onclick="setPeriod(this,'1y')">1 Year</div>
+                <div class="period-btn {% if selected_period == '2y' %}active{% endif %}" onclick="setPeriod(this,'2y')">2 Years</div>
             </div>
         </div>
 
         <!-- FORM -->
-        <form method="POST" id="stockForm" class="mt-4 text-center">
+        <form method="POST" id="stockForm" class="mt-3 text-center">
             {% csrf_token %}
-            <input type="hidden" name="stock" id="selectedStock">
-
-            <div class="selected-badge" id="selectedBadge">
-                <span>●</span> <span id="selectedLabel">—</span>
-            </div>
-            <br>
-            <button type="submit" class="analyze-btn" id="analyzeBtn">
+            <input type="hidden" name="stock"  id="selectedStock"  value="{{ selected_stock|default:'' }}">
+            <input type="hidden" name="period" id="selectedPeriod" value="{{ selected_period|default:'6mo' }}">
+            <button type="submit" class="analyze-btn {% if selected_stock %}active{% endif %}" id="analyzeBtn">
                 Run Analysis →
             </button>
         </form>
@@ -768,30 +739,71 @@ body::before {
 
     {% if score is not None %}
 
-    <!-- SENTIMENT METER -->
+    <!-- ANALYZED STOCK BANNER -->
+    <div style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: 14px;
+        padding: 16px 22px;
+        margin-bottom: 14px;
+        animation: fadeUp 0.5s ease forwards;
+        opacity: 0;
+        flex-wrap: wrap;
+        gap: 10px;
+    ">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <span style="font-size:24px;">📊</span>
+            <div>
+                <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Analyzed Stock</div>
+                <div style="font-size:22px; font-weight:800; letter-spacing:-0.5px; color:var(--accent);">{{ selected_stock }}</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="text-align:center;">
+                <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;">Period</div>
+                <div style="font-family:var(--font-mono); font-size:14px; color:var(--text); margin-top:3px;">{{ period_label }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;">Articles</div>
+                <div style="font-family:var(--font-mono); font-size:14px; color:var(--text); margin-top:3px;">{{ articles|length }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;">Signal</div>
+                <div style="font-family:var(--font-mono); font-size:14px; margin-top:3px;
+                    {% if recommendation == 'BUY' %}color:var(--accent);
+                    {% elif recommendation == 'SELL' %}color:var(--danger);
+                    {% else %}color:var(--warning);{% endif %}">
+                    {{ recommendation }}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="meter-card">
-        <div class="meter-label">Sentiment Spectrum</div>
+        <div class="meter-label">Combined Signal Spectrum — {{ selected_stock }} · {{ period_label }}</div>
         <div class="meter-bar-wrap">
             <div class="meter-bar-fill" id="meterFill" style="width:0%"></div>
         </div>
         <div class="meter-labels">
-            <span style="color: var(--danger)">◀ Bearish</span>
+            <span style="color:var(--danger)">◀ Bearish</span>
             <span>Neutral</span>
-            <span style="color: var(--accent)">Bullish ▶</span>
+            <span style="color:var(--accent)">Bullish ▶</span>
         </div>
     </div>
 
-    <!-- RESULT CARDS -->
-    <div class="results-row">
-        <div class="result-card score-card">
-            <div class="result-label">Sentiment Score</div>
-            <div class="result-value" style="color: var(--accent)">{{ score|floatformat:2 }}</div>
-            <div class="result-sub">{{ articles|length }} articles analyzed</div>
+    <div class="results-row" style="grid-template-columns:repeat(2,1fr);">
+        <div class="result-card" style="border-top:2px solid var(--accent);">
+            <div class="result-label">Combined Score</div>
+            <div class="result-value" style="color:var(--accent)">{{ score|floatformat:2 }}</div>
+            <div class="result-sub">60% news · 40% technical · {{ period_label }}</div>
         </div>
-
-        <div class="result-card rec-card">
+        <div class="result-card" style="border-top:2px solid #00ffcc;">
             <div class="result-label">Recommendation</div>
-            <div class="result-value" style="font-size:24px; margin-top: 4px;">
+            <div class="result-value" style="font-size:24px; margin-top:4px;">
                 {% if recommendation == "BUY" %}
                     <span class="badge-buy">📈 BUY</span>
                 {% elif recommendation == "SELL" %}
@@ -800,32 +812,60 @@ body::before {
                     <span class="badge-hold">⏸ HOLD</span>
                 {% endif %}
             </div>
-            <div class="result-sub">Based on NLP sentiment</div>
+            <div class="result-sub">News + Chart confirmation logic</div>
         </div>
+    </div>
 
-        <div class="result-card price-card">
+    <div class="results-row" style="grid-template-columns:repeat(3,1fr);">
+        <div class="result-card" style="border-top:2px solid var(--accent2); animation-delay:0.1s;">
+            <div class="result-label">News Sentiment</div>
+            <div class="result-value" style="color:var(--accent2); font-size:26px;">{{ sentiment_score|floatformat:2 }}</div>
+            <div class="result-sub">{{ articles|length }} articles · weight 60%</div>
+        </div>
+        <div class="result-card" style="border-top:2px solid #ff6600; animation-delay:0.15s;">
+            <div class="result-label">Technical Score</div>
+            <div class="result-value" style="color:#ff6600; font-size:26px;">{{ technical_score|floatformat:2 }}</div>
+            <div class="result-sub">RSI + MACD + MA · weight 40%</div>
+            <div class="signal-row" id="signalPills"></div>
+        </div>
+        <div class="result-card" style="border-top:2px solid var(--warning); animation-delay:0.2s;">
             <div class="result-label">Latest Close Price</div>
-            <div class="result-value" style="color: var(--warning)">{{ price_values|last }}</div>
-            <div class="result-sub">1-month data loaded</div>
+            <div class="result-value" style="color:var(--warning)">{{ price_values|last }}</div>
+            <div class="result-sub">{{ period_label }} data loaded</div>
         </div>
     </div>
 
     {% endif %}
 
 
-    <!-- PRICE CHART -->
     {% if price_labels %}
+
     <div class="chart-card">
         <div class="chart-header">
-            <div class="chart-title">Price Trend — 1 Month</div>
-            <div class="chart-stock-name">{{ price_values|last }}</div>
+            <div class="chart-title">Price + Moving Averages — {{ period_label }}</div>
+            <div style="display:flex; gap:16px; font-family:var(--font-mono); font-size:11px;">
+                <span style="color:#00e5a0">— Close</span>
+                <span style="color:#0066ff">-- MA20</span>
+                <span style="color:#ffaa00">-- MA50</span>
+            </div>
         </div>
         <canvas id="priceChart" height="80"></canvas>
     </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">RSI — Relative Strength Index</div>
+            <div style="display:flex; gap:16px; font-family:var(--font-mono); font-size:11px;">
+                <span style="color:var(--danger)">▬ Overbought &gt;65</span>
+                <span style="color:var(--accent)">▬ Oversold &lt;35</span>
+            </div>
+        </div>
+        <canvas id="rsiChart" height="40"></canvas>
+    </div>
+
     {% endif %}
 
 
-    <!-- NEWS -->
     {% if articles %}
     <div class="news-card-wrap">
         <div class="region-label" style="margin-top:0">📰 News Articles</div>
@@ -838,131 +878,256 @@ body::before {
 </div>
 
 
-<!-- CHART SCRIPT -->
 {% if price_labels %}
 <script>
-var ctx = document.getElementById('priceChart').getContext('2d');
-
-var gradient = ctx.createLinearGradient(0, 0, 0, 300);
-gradient.addColorStop(0, 'rgba(0,229,160,0.2)');
+var ctx1 = document.getElementById('priceChart').getContext('2d');
+var gradient = ctx1.createLinearGradient(0, 0, 0, 300);
+gradient.addColorStop(0, 'rgba(0,229,160,0.15)');
 gradient.addColorStop(1, 'rgba(0,229,160,0)');
 
-new Chart(ctx, {
+new Chart(ctx1, {
     type: 'line',
     data: {
         labels: {{ price_labels|safe }},
-        datasets: [{
-            label: 'Close Price',
-            data: {{ price_values|safe }},
-            borderColor: '#00e5a0',
-            backgroundColor: gradient,
-            borderWidth: 2,
-            tension: 0.4,
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: '#00e5a0',
-            fill: true
-        }]
+        datasets: [
+            { label: 'Close', data: {{ price_values|safe }}, borderColor: '#00e5a0', backgroundColor: gradient, borderWidth: 2, tension: 0.4, pointRadius: 0, pointHoverRadius: 5, fill: true },
+            { label: 'MA20', data: {{ ma20_values|safe }}, borderColor: '#0066ff', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false },
+            { label: 'MA50', data: {{ ma50_values|safe }}, borderColor: '#ffaa00', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false }
+        ]
     },
     options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#181c24',
-                borderColor: '#1f2733',
-                borderWidth: 1,
-                titleColor: '#5a6478',
-                bodyColor: '#00e5a0',
-                titleFont: { family: 'DM Mono' },
-                bodyFont: { family: 'DM Mono', size: 13 },
-                padding: 12,
-            }
-        },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#181c24', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#00e5a0', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12 } },
         scales: {
-            x: {
-                grid: { display: false },
-                ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
-                border: { display: false }
-            },
-            y: {
-                grid: { color: '#1f2733' },
-                ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 } },
-                border: { display: false }
-            }
+            x: { grid: { display: false }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 }, border: { display: false } },
+            y: { grid: { color: '#1f2733' }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 } }, border: { display: false } }
         }
     }
 });
 
-// Animate sentiment meter
+var rsiData = {{ rsi_values|safe }};
+var labels  = {{ price_labels|safe }};
+var ctx2    = document.getElementById('rsiChart').getContext('2d');
+var rsiGrad = ctx2.createLinearGradient(0, 0, 0, 200);
+rsiGrad.addColorStop(0, 'rgba(168,85,247,0.12)');
+rsiGrad.addColorStop(1, 'rgba(168,85,247,0)');
+
+new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'RSI', data: rsiData, borderColor: '#a855f7', backgroundColor: rsiGrad, borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true },
+            { data: labels.map(() => 65), borderColor: 'rgba(255,68,85,0.4)', borderWidth: 1, borderDash: [6,3], pointRadius: 0, fill: false },
+            { data: labels.map(() => 35), borderColor: 'rgba(0,229,160,0.4)', borderWidth: 1, borderDash: [6,3], pointRadius: 0, fill: false }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#181c24', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#a855f7', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12, filter: i => i.datasetIndex === 0 } },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 }, border: { display: false } },
+            y: { min: 0, max: 100, grid: { color: '#1f2733' }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, callback: v => [0,35,50,65,100].includes(v) ? v : '' }, border: { display: false } }
+        }
+    }
+});
+
 var score = {{ score }};
-var pct = ((score + 1) / 2) * 100;
-pct = Math.max(2, Math.min(98, pct));
-var fill = document.getElementById('meterFill');
-var color = score > 0.2 ? '#00e5a0' : score < -0.2 ? '#ff4455' : '#ffaa00';
-fill.style.background = color;
+var pct   = Math.max(2, Math.min(98, ((score + 1) / 2) * 100));
+var fill  = document.getElementById('meterFill');
+fill.style.background = score > 0.2 ? '#00e5a0' : score < -0.2 ? '#ff4455' : '#ffaa00';
 setTimeout(() => { fill.style.width = pct + '%'; }, 300);
+
+var latestRSI  = rsiData[rsiData.length - 1];
+var techScore  = {{ technical_score }};
+var pillsEl    = document.getElementById('signalPills');
+var pills      = [];
+if (latestRSI < 35)       pills.push(['Oversold RSI',    'bull']);
+else if (latestRSI > 65)  pills.push(['Overbought RSI',  'bear']);
+else                       pills.push(['RSI Neutral',     'neut']);
+if (techScore > 0.3)       pills.push(['Bullish MA Cross','bull']);
+else if (techScore < -0.3) pills.push(['Bearish MA Cross','bear']);
+else                       pills.push(['MA Neutral',      'neut']);
+if (pillsEl) pillsEl.innerHTML = pills.map(([l,t]) => `<span class="signal-pill signal-${t}">${l}</span>`).join('');
 </script>
 {% endif %}
 
-<!-- SEARCH + SELECTION SCRIPT -->
 <script>
-// Search filtering
-const searchInput = document.getElementById('searchInput');
-const searchClear = document.getElementById('searchClear');
-const noResults = document.getElementById('noResults');
+// ── WORLDWIDE SEARCH AUTOCOMPLETE ────────────────────────
+let searchTimeout  = null;
+let highlightIndex = -1;
+let currentResults = [];
 
-searchInput.addEventListener('input', function() {
-    const q = this.value.toLowerCase().trim();
-    searchClear.style.display = q ? 'block' : 'none';
+const searchInput  = document.getElementById('globalSearchInput');
+const dropdown     = document.getElementById('autocompleteDropdown');
+const spinner      = document.getElementById('searchSpinner');
+const searchHint   = document.getElementById('searchHint');
 
-    const cards = document.querySelectorAll('.stock-card');
-    let visible = 0;
-    cards.forEach(card => {
-        const name = card.dataset.name.toLowerCase();
-        const ticker = card.dataset.ticker.toLowerCase();
-        const match = !q || name.includes(q) || ticker.includes(q);
-        card.classList.toggle('hidden', !match);
-        if (match) visible++;
-    });
-    noResults.style.display = visible === 0 ? 'block' : 'none';
+searchInput.addEventListener('input', function () {
+    const q = this.value.trim();
+    clearTimeout(searchTimeout);
+    highlightIndex = -1;
+
+    if (q.length < 2) {
+        closeDropdown();
+        spinner.style.display = 'none';
+        return;
+    }
+
+    spinner.style.display = 'block';
+
+    searchTimeout = setTimeout(() => {
+        fetch(`/search_ticker/?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                spinner.style.display = 'none';
+                currentResults = data.results || [];
+                renderDropdown(currentResults);
+            })
+            .catch(() => {
+                spinner.style.display = 'none';
+                closeDropdown();
+            });
+    }, 300);   // debounce 300ms
 });
 
-function clearSearch() {
-    searchInput.value = '';
-    searchClear.style.display = 'none';
-    noResults.style.display = 'none';
-    document.querySelectorAll('.stock-card').forEach(c => c.classList.remove('hidden'));
+function renderDropdown(results) {
+    if (results.length === 0) {
+        dropdown.innerHTML = '<div class="autocomplete-no-results">No results found. Try a different name or ticker.</div>';
+        dropdown.classList.add('open');
+        return;
+    }
+
+    dropdown.innerHTML = results.map((r, i) => `
+        <div class="autocomplete-item" data-index="${i}"
+             onclick="selectFromSearch('${r.ticker}','${escapeJs(r.name)}','${escapeJs(r.exchange)}')">
+            <div class="autocomplete-left">
+                <div class="autocomplete-ticker">${r.ticker}</div>
+                <div class="autocomplete-name">${r.name}</div>
+            </div>
+            <div class="autocomplete-right">
+                <div class="autocomplete-exchange">${r.exchange}</div>
+                <div class="autocomplete-type">${r.type}</div>
+            </div>
+        </div>
+    `).join('');
+
+    dropdown.classList.add('open');
 }
 
-// Stock selection
-function selectStock(card, ticker) {
+// Keyboard navigation
+searchInput.addEventListener('keydown', function (e) {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        highlightIndex = Math.min(highlightIndex + 1, items.length - 1);
+        updateHighlight(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        highlightIndex = Math.max(highlightIndex - 1, 0);
+        updateHighlight(items);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlightIndex >= 0 && currentResults[highlightIndex]) {
+            const r = currentResults[highlightIndex];
+            selectFromSearch(r.ticker, r.name, r.exchange);
+        }
+    } else if (e.key === 'Escape') {
+        closeDropdown();
+    }
+});
+
+function updateHighlight(items) {
+    items.forEach((item, i) => {
+        item.classList.toggle('highlighted', i === highlightIndex);
+    });
+}
+
+function closeDropdown() {
+    dropdown.classList.remove('open');
+    dropdown.innerHTML = '';
+}
+
+// Close on outside click
+document.addEventListener('click', function (e) {
+    if (!document.getElementById('searchBoxWrap').contains(e.target)) {
+        closeDropdown();
+    }
+});
+
+function escapeJs(str) {
+    return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// Select from search autocomplete
+function selectFromSearch(ticker, name, exchange) {
+    document.getElementById('selectedStock').value  = ticker;
+    document.getElementById('displayTicker').textContent  = ticker;
+    document.getElementById('displayName').textContent    = name;
+    document.getElementById('displayExchange').textContent = exchange;
+    document.getElementById('selectedStockDisplay').classList.add('visible');
+    document.getElementById('analyzeBtn').classList.add('active');
+    searchInput.value = name + ' (' + ticker + ')';
+    searchHint.textContent = '✓ Stock selected — choose a period and run analysis.';
+    searchHint.style.color = 'var(--accent)';
+
+    // Deselect any shortcut card
+    document.querySelectorAll('.stock-card').forEach(c => c.classList.remove('selected'));
+    closeDropdown();
+}
+
+// Select from shortcut cards
+function selectFromCard(card, ticker, name, exchange) {
     document.querySelectorAll('.stock-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
-    document.getElementById('selectedStock').value = ticker;
-    document.getElementById('selectedLabel').textContent = ticker;
-    document.getElementById('selectedBadge').classList.add('visible');
+    document.getElementById('selectedStock').value        = ticker;
+    document.getElementById('displayTicker').textContent  = ticker;
+    document.getElementById('displayName').textContent    = name;
+    document.getElementById('displayExchange').textContent = exchange;
+    document.getElementById('selectedStockDisplay').classList.add('visible');
     document.getElementById('analyzeBtn').classList.add('active');
+    searchInput.value = '';
+    searchHint.textContent = '✓ Stock selected — choose a period and run analysis.';
+    searchHint.style.color = 'var(--accent)';
+    closeDropdown();
 }
 
-// Loading animation
+function clearSelection() {
+    document.getElementById('selectedStock').value = '';
+    document.getElementById('selectedStockDisplay').classList.remove('visible');
+    document.getElementById('analyzeBtn').classList.remove('active');
+    document.querySelectorAll('.stock-card').forEach(c => c.classList.remove('selected'));
+    searchInput.value = '';
+    searchHint.textContent = 'Search returns results from NYSE, NASDAQ, NSE, BSE, LSE, TSE and more.';
+    searchHint.style.color = '';
+}
+
+// Period selection
+function setPeriod(btn, period) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('selectedPeriod').value = period;
+}
+
+// Loading
 const loadingMessages = [
     'Fetching news articles...',
     'Running FinBERT analysis...',
-    'Aggregating sentiment scores...',
-    'Loading price data...',
+    'Calculating RSI & MACD...',
+    'Checking MA crossovers...',
     'Building your report...'
 ];
 
-document.getElementById('stockForm').addEventListener('submit', function(e) {
+document.getElementById('stockForm').addEventListener('submit', function (e) {
     if (!document.getElementById('selectedStock').value) { e.preventDefault(); return; }
-    const overlay = document.getElementById('loadingOverlay');
-    const stepEl = document.getElementById('loadingStep');
-    overlay.classList.add('show');
+    document.getElementById('loadingOverlay').classList.add('show');
     let i = 0;
     setInterval(() => {
-        stepEl.textContent = loadingMessages[i % loadingMessages.length];
+        document.getElementById('loadingStep').textContent = loadingMessages[i % loadingMessages.length];
         i++;
     }, 1200);
 });

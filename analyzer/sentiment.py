@@ -1,35 +1,23 @@
+import os
 import logging
-from transformers import pipeline
+import requests
 
 logger = logging.getLogger(__name__)
 
-# ── MODEL CACHE ───────────────────────────────────────────
-# distilbert-base-uncased-finetuned-sst-2-english
-# Only ~67MB vs FinBERT's 440MB — fits in Render free tier (512MB RAM)
-# Still strong sentiment accuracy for financial news
-_classifier = None
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-def _get_classifier():
-    global _classifier
-    if _classifier is None:
-        logger.info("Loading sentiment model...")
-        _classifier = pipeline(
-            "sentiment-analysis",
-            model="distilbert-base-uncased-finetuned-sst-2-english",
-            framework="pt",
-            device=-1,       # CPU
-            truncation=True,
-            max_length=512,
-        )
-        logger.info("Sentiment model loaded.")
-    return _classifier
+API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english"
 
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}"
+}
 
 MIN_CONFIDENCE   = 0.6
 WORDS_PER_CHUNK  = 60
-MAX_CHUNKS       = 1    # 1 chunk per article — fast + low memory
+MAX_CHUNKS       = 1
 
 
+# ── TEXT CHUNKING ─────────────────────────────────────────
 def _build_chunks(content: str) -> list[str]:
     words  = content.split()
     chunks = []
@@ -42,10 +30,43 @@ def _build_chunks(content: str) -> list[str]:
     return chunks
 
 
-def _score_from_result(result: dict) -> float:
-    """Convert model result to -1.0 to +1.0 float."""
-    label = result["label"].lower()
-    score = result["score"]
+# ── HF API CALL ───────────────────────────────────────────
+def _hf_sentiment(texts: list[str]):
+    payload = {"inputs": texts}
+
+    try:
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json=payload,
+            timeout=20
+        )
+        data = response.json()
+
+        # HF sometimes wraps results
+        if isinstance(data, list) and isinstance(data[0], list):
+            return [item[0] for item in data]
+
+        return data
+
+    except Exception as e:
+        logger.error("HF API failed: %s", e)
+        return []
+
+
+# ── SCORE CONVERSION ─────────────────────────────────────
+def _score_from_result(result):
+    # If accidentally string
+    if isinstance(result, str):
+        result = {"label": result, "score": 1.0}
+
+    # If nested list
+    if isinstance(result, list):
+        result = result[0]
+
+    label = result.get("label", "").lower()
+    score = result.get("score", 0)
+
     if score < MIN_CONFIDENCE:
         return 0.0
     if label == "positive":
@@ -54,14 +75,8 @@ def _score_from_result(result: dict) -> float:
         return -score
     return 0.0
 
-
+# ── MAIN BATCH ANALYZER ──────────────────────────────────
 def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
-    """
-    Analyze all articles in a single batch call.
-    Returns list of float scores, one per article.
-    """
-    classifier = _get_classifier()
-
     all_texts   = []
     article_map = []  # (article_idx, weight)
 
@@ -74,7 +89,7 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
             all_texts.append(title[:512])
             article_map.append((i, 2))
 
-        # Content chunk — weight 1
+        # Content — weight 1
         if content and len(content) > 20:
             for chunk in _build_chunks(content):
                 all_texts.append(chunk[:512])
@@ -83,10 +98,9 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
     if not all_texts:
         return [0.0] * len(articles)
 
-    try:
-        batch_results = classifier(all_texts, batch_size=8)
-    except Exception as e:
-        logger.error("Batch inference failed: %s", e)
+    batch_results = _hf_sentiment(all_texts)
+
+    if not batch_results:
         return [0.0] * len(articles)
 
     weighted_sum = [0.0] * len(articles)
@@ -108,6 +122,6 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
     return scores
 
 
+# ── SINGLE ARTICLE WRAPPER ───────────────────────────────
 def analyze_sentiment(article) -> float:
-    """Single article wrapper for backward compatibility."""
     return analyze_sentiment_batch([article])[0]

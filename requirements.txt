@@ -10,3 +10,4 @@ python-dotenv
 gunicorn
 whitenoise
 PyJWT
+cryptography

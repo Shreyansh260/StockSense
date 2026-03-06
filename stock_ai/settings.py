@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key-change-this')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,stocksense260.up.railway.app,').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

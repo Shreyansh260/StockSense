@@ -527,6 +527,138 @@ body::before {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* NAVBAR */
+    nav {
+        padding: 10px 14px !important;
+        flex-wrap: nowrap !important;
+    }
+    nav > div:first-child {
+        font-size: 15px !important;
+    }
+    nav > div:last-child {
+        gap: 8px !important;
+    }
+    /* Hide email on mobile */
+    nav > div:last-child > div > div > div:last-child {
+        display: none !important;
+    }
+    /* Shrink avatar */
+    nav > div:last-child > div > div:first-child {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+    /* Sign out button */
+    nav > div:last-child form button {
+        padding: 6px 10px !important;
+        font-size: 10px !important;
+    }
+
+    /* HEADER */
+    .header { padding: 16px 12px 12px !important; }
+    .header-sub { font-size: 12px; }
+
+    /* CONTAINER */
+    .container-main { padding: 0 10px 40px; }
+
+    /* SELECTOR PANEL */
+    .selector-panel { padding: 16px 12px; border-radius: 14px; }
+
+    /* SEARCH INPUT */
+    #globalSearchInput {
+        font-size: 13px !important;
+        padding: 11px 40px 11px 42px !important;
+    }
+    .search-globe-icon { font-size: 15px !important; left: 12px !important; }
+    .search-hint { font-size: 10px; }
+
+    /* SELECTED STOCK */
+    .selected-stock-display { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+    .selected-stock-ticker { font-size: 15px; }
+    .selected-stock-exchange { margin-left: 0; }
+
+    /* STOCK GRID - 3 columns */
+    .stock-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 7px;
+    }
+    .stock-card { padding: 10px 4px 8px; border-radius: 10px; }
+    .stock-logo { font-size: 18px; margin-bottom: 3px; }
+    .stock-ticker { font-size: 9px; }
+    .stock-name { font-size: 8px; margin-top: 1px; }
+
+    /* PERIOD BUTTONS */
+    .period-selector { gap: 6px; }
+    .period-btn { padding: 7px 10px; font-size: 11px; }
+
+    /* ANALYZE BUTTON */
+    .analyze-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 14px;
+    }
+
+    /* RESULTS - stack to 1 column */
+    .results-row[style*="repeat(2"] {
+        grid-template-columns: 1fr !important;
+    }
+    .results-row[style*="repeat(3"] {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .result-card { padding: 14px; }
+    .result-value { font-size: 24px; }
+    .result-sub { font-size: 10px; }
+
+    /* STOCK BANNER */
+    div[style*="border-left: 4px solid var(--accent)"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 12px 14px !important;
+        gap: 8px !important;
+    }
+    div[style*="border-left: 4px solid var(--accent)"] > div:last-child {
+        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+    }
+
+    /* METER */
+    .meter-card { padding: 14px 16px; }
+    .meter-label { font-size: 9px; }
+
+    /* CHARTS */
+    .chart-card { padding: 14px; }
+    .chart-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        margin-bottom: 12px;
+    }
+    .chart-header > div:last-child {
+        gap: 10px !important;
+        font-size: 10px !important;
+    }
+
+    /* NEWS */
+    .news-card-wrap { padding: 14px; }
+    .news-item { font-size: 12px; padding: 10px 12px; }
+
+    /* TICKER TAPE */
+    .ticker-inner { gap: 28px; }
+    .ticker-item { font-size: 11px; }
+}
+
+@media (max-width: 400px) {
+    .stock-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .results-row[style*="repeat(3"] { grid-template-columns: 1fr !important; }
+    .result-value { font-size: 20px; }
+    nav > div:last-child > div { display: none !important; }
+}
+
 </style>
 </head>
 
@@ -561,7 +693,7 @@ body::before {
 <div class="header" style="padding-top:28px;">
     <div class="header-eyebrow">● Live Market Intelligence</div>
     <h1>Stock<span>Sense</span> AI</h1>
-    <p class="header-sub">DistilBERT + Technical Analysis · Search any stock worldwide</p>
+    <p class="header-sub">FinBERT + Technical Analysis · Search any stock worldwide</p>
 </div>
 
 <!-- TICKER TAPE -->
@@ -1124,7 +1256,7 @@ function setPeriod(btn, period) {
 // Loading
 const loadingMessages = [
     'Fetching news articles...',
-    'Running DistilBERT analysis...',
+    'Running FinBERT analysis...',
     'Calculating RSI & MACD...',
     'Checking MA crossovers...',
     'Building your report...'

@@ -613,6 +613,65 @@ footer {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+
+/* ── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* NAVBAR */
+    nav { padding: 14px 16px; }
+    .nav-links { display: none; }
+    .nav-cta { padding: 8px 16px; font-size: 11px; }
+
+    /* HERO */
+    .hero { padding: 50px 20px 40px; }
+    .hero-eyebrow { font-size: 9px; }
+    .hero h1 { font-size: 30px !important; }
+    .hero-sub { font-size: 13px; }
+    .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+    .btn-primary-hero, .btn-secondary-hero { text-align: center; padding: 14px 20px; }
+
+    /* HIDE FLOATING CARDS */
+    .hero-cards { display: none; }
+
+    /* HERO STATS */
+    .hero-stats { flex-wrap: wrap; justify-content: center; gap: 16px; }
+
+    /* FEATURES */
+    .features { padding: 48px 20px; }
+    .section-title { font-size: 22px !important; }
+    .features-grid { grid-template-columns: 1fr !important; gap: 12px; }
+    .feature-card { padding: 20px; }
+
+    /* STEPS */
+    .steps { grid-template-columns: 1fr 1fr !important; gap: 12px; }
+
+    /* TECH STACK */
+    .tech-stack { gap: 8px; justify-content: center; }
+    .tech-pill { font-size: 11px; padding: 6px 10px; }
+
+    /* CTA BANNER */
+    .cta-banner {
+        margin: 0 12px;
+        padding: 36px 20px;
+        border-radius: 16px;
+    }
+    .cta-banner h2 { font-size: 22px !important; }
+
+    /* FOOTER */
+    footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 { font-size: 24px !important; }
+    .steps { grid-template-columns: 1fr !important; }
+    .section-title { font-size: 18px !important; }
+    .hero-stats { display: none; }
+}
 </style>
 </head>
 
@@ -625,7 +684,7 @@ footer {
         <li><a href="#features">Features</a></li>
         <li><a href="#how-it-works">How it works</a></li>
         <li><a href="#about">About</a></li>
-        <li><a href="/analyze_stock/" class="nav-cta">LOGIN →</a></li>
+        <li><a href="/analyze_stock/" class="nav-cta">Launch App →</a></li>
     </ul>
 </nav>
 
@@ -675,7 +734,7 @@ footer {
 
     <div class="hero-stats">
         <div class="stat-item">
-            <div class="stat-value">FinBERT</div>
+            <div class="stat-value">DistilBERT</div>
             <div class="stat-label">NLP Model</div>
         </div>
         <div class="stat-item">
@@ -730,7 +789,7 @@ footer {
         <div class="feature-card">
             <span class="feature-icon">🧠</span>
             <h4>DistilBERT Sentiment Analysis</h4>
-            <p>State-of-the-art financial NLP model trained on financial news, earnings calls, and analyst reports — not generic text.</p>
+            <p>State-of-the-art lightweight NLP model fine-tuned for sentiment analysis, earnings calls, and analyst reports — not generic text.</p>
             <span class="feature-tag">HuggingFace Transformers</span>
         </div>
 
@@ -790,7 +849,7 @@ footer {
         </div>
         <div class="step">
             <div class="step-number">03</div>
-            <h5>Run FinBERT</h5>
+            <h5>Run DistilBERT</h5>
             <p>Each article is chunked and analyzed for positive, negative, or neutral sentiment.</p>
         </div>
         <div class="step">
@@ -823,7 +882,7 @@ footer {
         </p>
         <div class="tech-stack">
             <span class="tech-pill">Django 5.2</span>
-            <span class="tech-pill">FinBERT</span>
+            <span class="tech-pill">DistilBERT</span>
             <span class="tech-pill">HuggingFace Transformers</span>
             <span class="tech-pill">yFinance</span>
             <span class="tech-pill">NewsAPI</span>
@@ -839,7 +898,7 @@ footer {
 <div class="cta-banner">
     <h2>Ready to read the market?</h2>
     <p>Select a stock, choose your period, and get an AI-powered signal in seconds.</p>
-    <a href="/analyze_stock/" class="btn-primary-hero">LAUNCH DASHBOARD →</a>
+    <a href="/analyze_stock/" class="btn-primary-hero">Launch Dashboard →</a>
 </div>
 
 <!-- FOOTER -->

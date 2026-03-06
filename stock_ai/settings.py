@@ -92,7 +92,7 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://round-mode-9da2.shreyanshsinghrathore7.workers.dev",
+    "https://web-production-e37fab.up.railway.app",
 ]
 # ── ALLAUTH (updated for new version) ────────────────────
 ACCOUNT_LOGIN_METHODS      = {'email'}

@@ -1,17 +1,21 @@
-API_KEY = "3012e40ac1e94ac6bd271a3baa140c5b"
+
 import os
 import logging
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+load_dotenv()  # Load .env file
 
-# API_KEY      = os.getenv("NEWS_API_KEY")
+API_KEY = os.getenv("NEWS_API_KEY")   
+
 NEWS_API_URL = "https://newsapi.org/v2/everything"
+
 MAX_ARTICLES  = 10    # 10 articles for reliable sentiment
 FETCH_TIMEOUT = 3     # 3s timeout per article (fast fail)
-MAX_WORKERS   = 5     # parallel article fetches
+MAX_WORKERS   = 5     # parallel article fetch
 
 
 def _fetch_article_text(url: str) -> str:
@@ -135,3 +139,4 @@ def get_news(stock_name: str) -> list[dict]:
     except Exception as e:
         logger.exception("Error in get_news() for %s: %s", stock_name, e)
         return []
+    

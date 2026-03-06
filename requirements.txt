@@ -1,0 +1,11 @@
+django
+django-allauth
+requests
+yfinance
+pandas
+transformers
+torch
+beautifulsoup4
+python-dotenv
+gunicorn
+whitenoise

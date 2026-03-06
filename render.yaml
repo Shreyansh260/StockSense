@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: stocksense-ai
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn stock_ai.wsgi --workers 2 --threads 2 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: NEWS_API_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false

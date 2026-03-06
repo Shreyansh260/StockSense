@@ -4,53 +4,48 @@ from transformers import pipeline
 logger = logging.getLogger(__name__)
 
 # ── MODEL CACHE ───────────────────────────────────────────
-# Loaded once at startup, reused for every request.
-# Django apps.py ready() is the right place, but module-level
-# with a None guard works fine for development and production.
+# distilbert-base-uncased-finetuned-sst-2-english
+# Only ~67MB vs FinBERT's 440MB — fits in Render free tier (512MB RAM)
+# Still strong sentiment accuracy for financial news
 _classifier = None
 
 def _get_classifier():
     global _classifier
     if _classifier is None:
-        logger.info("Loading FinBERT model...")
+        logger.info("Loading sentiment model...")
         _classifier = pipeline(
             "sentiment-analysis",
-            model="ProsusAI/finbert",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
             framework="pt",
-            device=-1,          # CPU; change to 0 if you have a GPU
+            device=-1,       # CPU
             truncation=True,
             max_length=512,
         )
-        logger.info("FinBERT model loaded.")
+        logger.info("Sentiment model loaded.")
     return _classifier
 
 
-MIN_CONFIDENCE = 0.6
-WORDS_PER_CHUNK = 60    # shorter chunks → faster tokenization
-MAX_CHUNKS_PER_ARTICLE = 1  # 1 chunk per article → fastest
+MIN_CONFIDENCE   = 0.6
+WORDS_PER_CHUNK  = 60
+MAX_CHUNKS       = 1    # 1 chunk per article — fast + low memory
 
 
 def _build_chunks(content: str) -> list[str]:
-    """Split content into word-based chunks."""
     words  = content.split()
     chunks = []
-    step   = 80
-
-    for i in range(0, len(words), step):
+    for i in range(0, len(words), 80):
         chunk = " ".join(words[i:i + WORDS_PER_CHUNK])
         if chunk.strip():
             chunks.append(chunk)
-        if len(chunks) >= MAX_CHUNKS_PER_ARTICLE:
+        if len(chunks) >= MAX_CHUNKS:
             break
-
     return chunks
 
 
 def _score_from_result(result: dict) -> float:
-    """Convert a single FinBERT result dict to a float score."""
-    label = result["label"]
+    """Convert model result to -1.0 to +1.0 float."""
+    label = result["label"].lower()
     score = result["score"]
-
     if score < MIN_CONFIDENCE:
         return 0.0
     if label == "positive":
@@ -62,18 +57,13 @@ def _score_from_result(result: dict) -> float:
 
 def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
     """
-    Analyze a list of article dicts in a SINGLE batch inference call.
-    This is much faster than calling the model once per chunk.
-
-    Each article dict has 'title' and 'content' keys.
-    Returns a list of float scores (one per article).
+    Analyze all articles in a single batch call.
+    Returns list of float scores, one per article.
     """
     classifier = _get_classifier()
 
-    # ── Build all texts to score ──────────────────────────
-    # Structure: list of (article_idx, weight, text)
     all_texts   = []
-    article_map = []   # maps each text index → (article_idx, weight)
+    article_map = []  # (article_idx, weight)
 
     for i, article in enumerate(articles):
         title   = article.get("title",   "") if isinstance(article, dict) else str(article)
@@ -84,7 +74,7 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
             all_texts.append(title[:512])
             article_map.append((i, 2))
 
-        # Content chunks — weight 1 each
+        # Content chunk — weight 1
         if content and len(content) > 20:
             for chunk in _build_chunks(content):
                 all_texts.append(chunk[:512])
@@ -93,22 +83,20 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
     if not all_texts:
         return [0.0] * len(articles)
 
-    # ── Single batch inference call ───────────────────────
     try:
-        batch_results = classifier(all_texts, batch_size=16)
+        batch_results = classifier(all_texts, batch_size=8)
     except Exception as e:
-        logger.error("FinBERT batch inference failed: %s", e)
+        logger.error("Batch inference failed: %s", e)
         return [0.0] * len(articles)
 
-    # ── Aggregate scores per article ─────────────────────
-    weighted_sum    = [0.0] * len(articles)
-    total_weight    = [0.0] * len(articles)
+    weighted_sum = [0.0] * len(articles)
+    total_weight = [0.0] * len(articles)
 
     for (art_idx, weight), result in zip(article_map, batch_results):
         score = _score_from_result(result)
         if score != 0.0:
-            weighted_sum[art_idx]  += score * weight
-            total_weight[art_idx]  += weight
+            weighted_sum[art_idx] += score * weight
+            total_weight[art_idx] += weight
 
     scores = []
     for i in range(len(articles)):
@@ -121,8 +109,5 @@ def analyze_sentiment_batch(articles: list[dict]) -> list[float]:
 
 
 def analyze_sentiment(article) -> float:
-    """
-    Single-article wrapper for backward compatibility.
-    Internally uses batch processing.
-    """
+    """Single article wrapper for backward compatibility."""
     return analyze_sentiment_batch([article])[0]

@@ -10,7 +10,7 @@
 
 **AI-powered stock analysis combining NLP sentiment with technical indicators to generate BUY / SELL / HOLD signals.**
 
-[🚀 Live Demo](https://stocksense-hx6f.onrender.com) · [📖 How It Works](#how-it-works) · [⚙️ Setup](#setup)
+[🚀 Live Demo](https://shreyansh260.pythonanywhere.com) · [📖 How It Works](#how-it-works) · [⚙️ Setup](#setup)
 
 </div>
 

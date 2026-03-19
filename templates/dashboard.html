@@ -1,29 +1,39 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>StockSense AI — Sentiment Analyzer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --surface2: #181c24;
-    --border: #1f2733;
-    --accent: #00e5a0;
-    --accent2: #0066ff;
+    --bg: #0A0A0A;
+    --surface: rgba(18, 18, 18, 0.60);
+    --surface-solid: #111111;
+    --surface2: #161616;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(255, 255, 255, 0.05);
+    --accent: #22D3EE;
+    --accent2: #0E7490;
     --danger: #ff4455;
     --warning: #ffaa00;
     --purple: #a855f7;
-    --text: #e8eaf0;
-    --muted: #5a6478;
-    --font-display: 'Syne', sans-serif;
+    --text: #ffffff;
+    --muted: #808080;
+    --font-display: 'Inter', 'Space Grotesk', sans-serif;
+    --font-heading: 'Space Grotesk', 'Inter', sans-serif;
     --font-mono: 'DM Mono', monospace;
+    --glass-bg: rgba(18, 18, 18, 0.60);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+    --shadow-card-hover: 0 16px 48px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.3);
+    --transition-smooth: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+html { scroll-behavior: smooth; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -32,6 +42,9 @@ body {
     font-family: var(--font-display);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
 }
 
 body::before {
@@ -39,9 +52,9 @@ body::before {
     position: fixed;
     inset: 0;
     background-image:
-        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+        linear-gradient(rgba(34, 211, 238,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
     pointer-events: none;
     z-index: 0;
 }
@@ -71,18 +84,23 @@ body::before {
     margin-bottom: 12px;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.1s forwards;
+    text-shadow: none;
 }
 
 .header h1 {
+    font-family: var(--font-heading);
     font-size: clamp(28px, 5vw, 52px);
     font-weight: 800;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
     line-height: 1.1;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.2s forwards;
 }
 
-.header h1 span { color: var(--accent); }
+.header h1 span {
+    color: var(--accent);
+    text-shadow: none;
+}
 
 .header-sub {
     color: var(--muted);
@@ -95,11 +113,13 @@ body::before {
 
 /* TICKER TAPE */
 .ticker-tape {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    background: rgba(14, 14, 14,0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
     overflow: hidden;
-    padding: 10px 0;
+    padding: 12px 0;
     margin-bottom: 32px;
     position: relative;
     z-index: 1;
@@ -122,7 +142,7 @@ body::before {
     gap: 8px;
 }
 
-.ticker-item .up { color: var(--accent); }
+.ticker-item .up { color: #00e5a0; }
 .ticker-item .down { color: var(--danger); }
 
 @keyframes tickerScroll {
@@ -132,13 +152,19 @@ body::before {
 
 /* SELECTOR PANEL */
 .selector-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
+    background: linear-gradient(145deg, #1e1e2a, #16161f);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 32px;
     margin-bottom: 32px;
     opacity: 0;
     animation: fadeUp 0.6s ease 0.4s forwards;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
+    transition: var(--transition-smooth);
+}
+
+.selector-panel:hover {
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3);
 }
 
 /* ── WORLDWIDE SEARCH ──────────────────────────────────── */
@@ -178,20 +204,22 @@ body::before {
 
 #globalSearchInput {
     width: 100%;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
+    background: rgba(15, 15, 15,0.8);
+    border: 1.5px solid var(--glass-border);
     border-radius: 14px;
     padding: 14px 48px 14px 50px;
     color: var(--text);
     font-family: var(--font-mono);
     font-size: 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 #globalSearchInput:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 #globalSearchInput::placeholder { color: var(--muted); }
@@ -233,7 +261,7 @@ body::before {
     justify-content: space-between;
     padding: 12px 16px;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
     border-bottom: 1px solid var(--border);
 }
 
@@ -241,7 +269,9 @@ body::before {
 
 .autocomplete-item:hover,
 .autocomplete-item.highlighted {
-    background: rgba(0,229,160,0.06);
+    background: rgba(34, 211, 238,0.06);
+    transform: translateX(4px);
+    border-left: 2px solid var(--accent);
 }
 
 .autocomplete-left { display: flex; flex-direction: column; gap: 2px; }
@@ -297,8 +327,8 @@ body::before {
     display: none;
     align-items: center;
     gap: 12px;
-    background: rgba(0,229,160,0.06);
-    border: 1.5px solid rgba(0,229,160,0.3);
+    background: rgba(34, 211, 238,0.06);
+    border: 1.5px solid rgba(34, 211, 238,0.3);
     border-radius: 12px;
     padding: 12px 16px;
     margin-top: 12px;
@@ -370,36 +400,48 @@ body::before {
 }
 
 .stock-card {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
+    background: rgba(15, 15, 15,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 16px;
     padding: 16px 10px 12px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-smooth);
     user-select: none;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
 
 .stock-card::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(0,229,160,0.08), transparent 70%);
+    background: linear-gradient(145deg, rgba(255,255,255,0.03), transparent 70%);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.4s;
 }
 
-.stock-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,229,160,0.12); }
+.stock-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
 .stock-card:hover::before { opacity: 1; }
-.stock-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.06); box-shadow: 0 0 0 3px rgba(0,229,160,0.15); }
+.stock-card.selected {
+    border-color: var(--accent);
+    background: rgba(34, 211, 238, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
 .stock-card.selected::before { opacity: 1; }
 
-.stock-logo { font-size: 26px; margin-bottom: 6px; display: block; }
-.stock-ticker { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text); }
-.stock-name { font-size: 10px; color: var(--muted); margin-top: 2px; }
-.stock-card.selected .stock-ticker { color: var(--accent); }
+.stock-logo { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; margin: 0 auto 6px; display: block; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); background: #fff; padding: 2px; }
+.stock-card:hover .stock-logo { transform: scale(1.18) translateY(-2px); }
+.stock-ticker { display: none; }
+.stock-name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text); margin-top: 2px; }
+.stock-card.selected .stock-name { color: var(--accent); }
 
 /* PERIOD SELECTOR */
 .period-label-title {
@@ -422,111 +464,242 @@ body::before {
 
 .period-btn {
     background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
     padding: 8px 18px;
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background 0.15s ease-out, color 0.15s ease-out;
     user-select: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 3px 0 #0a0a0a, 0 4px 8px rgba(0,0,0,0.3);
 }
 
-.period-btn:hover { border-color: var(--accent); color: var(--accent); }
-.period-btn.active { background: rgba(0,229,160,0.1); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,229,160,0.15); }
+.period-btn:hover {
+    background: #1e1e1e;
+    color: var(--text);
+    transform: translateY(-2px);
+    box-shadow: inset 0 2px 1px rgba(255, 255, 255, 0.08), 0 5px 0 #0a0a0a, 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.period-btn.active {
+    background: #111;
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 0 #0a0a0a, 0 1px 2px rgba(0,0,0,0.2);
+}
 
 /* ANALYZE BUTTON */
 .analyze-btn {
-    background: var(--accent);
+    background: linear-gradient(to bottom, var(--accent), #1abccf);
     color: #000;
     border: none;
     padding: 14px 48px;
-    border-radius: 12px;
+    border-radius: 999px;
     font-family: var(--font-display);
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background 0.15s ease-out, opacity 0.3s ease;
     opacity: 0.3;
     pointer-events: none;
     letter-spacing: 0.5px;
     position: relative;
-    overflow: hidden;
+    box-shadow: inset 0 2px 1px rgba(255, 255, 255, 0.5), 0 5px 0 #0E7490, 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-.analyze-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.5s;
+.analyze-btn.active { opacity: 1; pointer-events: all; }
+.analyze-btn.active:hover {
+    background: linear-gradient(to bottom, #44Def0, var(--accent));
+    transform: translateY(-3px);
+    box-shadow: inset 0 2px 1px rgba(255, 255, 255, 0.6), 0 8px 0 #0E7490, 0 12px 24px rgba(0, 0, 0, 0.35);
 }
-
-.analyze-btn.active { opacity: 1; pointer-events: all; box-shadow: 0 4px 20px rgba(0,229,160,0.3); }
-.analyze-btn.active:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,229,160,0.4); }
-.analyze-btn.active:hover::after { transform: translateX(100%); }
+.analyze-btn.active:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 3px 0 #0E7490, 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
 /* RESULT CARDS */
 .results-row { display: grid; gap: 14px; margin-bottom: 14px; }
 
 .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 22px;
+    background: linear-gradient(145deg, #1e1e2a, #16161f);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 26px;
     position: relative;
     overflow: hidden;
     animation: fadeUp 0.5s ease forwards;
     opacity: 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: var(--transition-smooth);
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .result-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .result-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
 .result-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--font-mono); }
 
-.badge-buy { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
+.badge-buy { background: rgba(0, 229, 160, 0.15); color: #00e5a0; border: 1px solid rgba(0, 229, 160, 0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
 .badge-sell { background: rgba(255,68,85,0.15); color: var(--danger); border: 1px solid rgba(255,68,85,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
 .badge-hold { background: rgba(255,170,0,0.15); color: var(--warning); border: 1px solid rgba(255,170,0,0.3); border-radius: 8px; padding: 4px 14px; font-size: 22px; font-weight: 800; }
 
 /* METER */
-.meter-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 28px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.1s forwards; opacity: 0; }
+.meter-card { background: linear-gradient(145deg, #1e1e2a, #16161f); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 26px 28px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.1s forwards; opacity: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25); transition: var(--transition-smooth); }
+.meter-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3); }
 .meter-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-.meter-bar-wrap { background: var(--surface2); border-radius: 99px; height: 10px; overflow: hidden; }
+.meter-bar-wrap { background: rgba(15, 15, 15,0.8); border-radius: 99px; height: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
 .meter-bar-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
 .meter-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 6px; }
 
 /* CHART */
-.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.2s forwards; opacity: 0; }
+.chart-card { background: linear-gradient(145deg, #1e1e2a, #16161f); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.2s forwards; opacity: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25); transition: var(--transition-smooth); }
+.chart-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3); }
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
 .chart-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
 
 /* SIGNAL PILLS */
 .signal-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .signal-pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 6px; }
-.signal-bull { background: rgba(0,229,160,0.12); color: var(--accent); border: 1px solid rgba(0,229,160,0.25); }
+.signal-bull { background: rgba(0, 229, 160, 0.12); color: #00e5a0; border: 1px solid rgba(0, 229, 160, 0.25); }
 .signal-bear { background: rgba(255,68,85,0.12); color: var(--danger); border: 1px solid rgba(255,68,85,0.25); }
 .signal-neut { background: rgba(255,170,0,0.12); color: var(--warning); border: 1px solid rgba(255,170,0,0.25); }
 
 /* NEWS */
-.news-card-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; animation: fadeUp 0.5s ease 0.3s forwards; opacity: 0; }
-.news-item { padding: 14px 16px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #b0b8cc; background: var(--surface2); border-left: 3px solid var(--border); transition: border-color 0.2s, background 0.2s; line-height: 1.5; }
-.news-item:hover { border-left-color: var(--accent); background: rgba(0,229,160,0.04); color: var(--text); }
+.news-card-wrap { background: linear-gradient(145deg, #1e1e2a, #16161f); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 28px; animation: fadeUp 0.5s ease 0.3s forwards; opacity: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25); }
+.news-item { padding: 14px 16px; border-radius: 4px; margin-bottom: 8px; font-size: 13px; color: #B8B8B8; background: #0f0f0f; border-left: 3px solid rgba(255, 255, 255, 0.06); line-height: 1.5; box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 3px 0 #0a0a0a, 0 4px 10px rgba(0,0,0,0.35); }
 .news-item:last-child { margin-bottom: 0; }
 
 /* LOADING */
-#loadingOverlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,0.92); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+#loadingOverlay { display: none; position: fixed; inset: 0; background: rgba(10, 10, 10,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
 #loadingOverlay.show { display: flex; }
-.spinner { width: 48px; height: 48px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-.loading-text { font-family: var(--font-mono); font-size: 13px; color: var(--muted); letter-spacing: 2px; }
-.loading-steps { font-family: var(--font-mono); font-size: 11px; color: var(--accent); opacity: 0.7; }
+/* ── CUSTOM PILL LOADER ── */
+.pill-loader-container {
+    position: relative;
+    width: 220px;
+    height: 48px;
+    background: #B2EBF2; /* Base lighter cyan color */
+    border-radius: 99px;
+    border: 3px solid #0E7490; /* Deep teal border */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.1), 0 4px 16px rgba(244,196,107,0.2);
+    margin-bottom: 12px;
+}
+
+/* Left cap / progress effect */
+.pill-left-cap {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    background: #0E7490;
+    border-radius: 99px 0 0 99px;
+}
+
+/* The spinning fan on the right */
+.pill-fan-container {
+    position: absolute;
+    right: 4px;
+    width: 38px;
+    height: 38px;
+    background: #0E7490;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pill-fan {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    animation: fanSpin 0.7s linear infinite;
+}
+
+.pill-fan-blade {
+    position: absolute;
+    width: 12px;
+    height: 6px;
+    background: #0E7490;
+    border-radius: 10px;
+    top: 9px;
+    left: 12px;
+    transform-origin: 0% 50%;
+}
+.pill-fan-blade:nth-child(1) { transform: rotate(0deg); }
+.pill-fan-blade:nth-child(2) { transform: rotate(120deg); }
+.pill-fan-blade:nth-child(3) { transform: rotate(240deg); }
+
+/* Flowing particles (leaves/dust) */
+.pill-particles {
+    position: absolute;
+    left: 20px;
+    right: 50px;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.pill-particle {
+    position: absolute;
+    width: 8px;
+    height: 4px;
+    background: #0E7490;
+    border-radius: 10px 0 10px 0; /* Leaf-like shape */
+    opacity: 0.6;
+    animation: particleFlow 2s linear infinite;
+}
+
+.pill-particle:nth-child(1) { top: 12px; left: 100%; animation-delay: 0s; font-size: 8px; transform: scale(1.2) rotate(15deg); }
+.pill-particle:nth-child(2) { top: 28px; left: 80%; animation-delay: 0.7s; font-size: 6px; transform: scale(0.8) rotate(-10deg); }
+.pill-particle:nth-child(3) { top: 18px; left: 60%; animation-delay: 1.4s; font-size: 10px; transform: scale(1) rotate(45deg); }
+.pill-particle:nth-child(4) { top: 32px; left: 40%; animation-delay: 0.3s; font-size: 7px; transform: scale(0.9) rotate(-25deg); }
+
+@keyframes fanSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+
+@keyframes particleFlow {
+    0% { transform: translateX(0px) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { transform: translateX(-160px) rotate(-180deg); opacity: 0; }
+}
+
+/* Keeps the existing classes safe */
+.spinner, .spinner-video { display: none; } 
+
+.loading-text { 
+    font-family: var(--font-heading); 
+    font-size: 16px; 
+    font-weight: 600;
+    color: #0E7490; /* Match the pill accent */
+    letter-spacing: 1px; 
+    animation: loadingPulse 2s ease-in-out infinite;
+    text-shadow: none;
+}
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
 
 /* ── MOBILE RESPONSIVE ───────────────────────────────────── */
 @media (max-width: 768px) {
@@ -587,9 +760,8 @@ body::before {
         gap: 7px;
     }
     .stock-card { padding: 10px 4px 8px; border-radius: 10px; }
-    .stock-logo { font-size: 18px; margin-bottom: 3px; }
-    .stock-ticker { font-size: 9px; }
-    .stock-name { font-size: 8px; margin-top: 1px; }
+    .stock-logo { width: 24px; height: 24px; border-radius: 6px; margin-bottom: 3px; padding: 2px; }
+    .stock-name { font-size: 9px; margin-top: 1px; }
 
     /* PERIOD BUTTONS */
     .period-selector { gap: 6px; }
@@ -666,17 +838,34 @@ body::before {
 
 <!-- LOADING OVERLAY -->
 <div id="loadingOverlay">
-    <div class="spinner"></div>
-    <div class="loading-text">ANALYZING</div>
+    <!-- Custom CSS Pill Loader -->
+    <div class="pill-loader-container">
+        <div class="pill-left-cap"></div>
+        <div class="pill-particles">
+            <div class="pill-particle"></div>
+            <div class="pill-particle"></div>
+            <div class="pill-particle"></div>
+            <div class="pill-particle"></div>
+        </div>
+        <div class="pill-fan-container">
+            <div class="pill-fan">
+                <div class="pill-fan-blade"></div>
+                <div class="pill-fan-blade"></div>
+                <div class="pill-fan-blade"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-text">Loading</div>
     <div class="loading-steps" id="loadingStep">Fetching news articles...</div>
 </div>
 
 <!-- NAVBAR -->
-<nav style="position:sticky;top:0;z-index:50;background:rgba(10,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;justify-content:space-between;align-items:center;">
+<nav style="position:sticky;top:0;z-index:50;background:rgba(10, 10, 10,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;justify-content:space-between;align-items:center;">
     <div style="font-size:18px;font-weight:800;letter-spacing:-0.5px;">Stock<span style="color:var(--accent)">Sense</span> AI</div>
     <div style="display:flex;align-items:center;gap:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,229,160,0.15);border:1.5px solid rgba(0,229,160,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);">{{ request.user.first_name|first|upper }}</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(34, 211, 238,0.15);border:1.5px solid rgba(34, 211, 238,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);">{{ request.user.first_name|first|upper }}</div>
             <div>
                 <div style="font-size:13px;font-weight:600;">{{ request.user.get_full_name|default:request.user.email }}</div>
                 <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">{{ request.user.email }}</div>
@@ -762,33 +951,27 @@ body::before {
             <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:8px;">🇺🇸 US</div>
             <div class="stock-grid">
                 <div class="stock-card" onclick="selectFromCard(this,'AAPL','Apple Inc.','NASDAQ')">
-                    <span class="stock-logo">🍎</span>
-                    <div class="stock-ticker">AAPL</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=apple.com" alt="Apple logo" />
                     <div class="stock-name">Apple</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'TSLA','Tesla','NASDAQ')">
-                    <span class="stock-logo">⚡</span>
-                    <div class="stock-ticker">TSLA</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=tesla.com" alt="Tesla logo" />
                     <div class="stock-name">Tesla</div>
                 </div>
-                <div class="stock-card" onclick="selectFromCard(this,'GOOGL','Alphabet','NASDAQ')">
-                    <span class="stock-logo">🔍</span>
-                    <div class="stock-ticker">GOOGL</div>
-                    <div class="stock-name">Alphabet</div>
+                <div class="stock-card" onclick="selectFromCard(this,'GOOGL','Google','NASDAQ')">
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=google.com" alt="Google logo" />
+                    <div class="stock-name">Google</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'MSFT','Microsoft','NASDAQ')">
-                    <span class="stock-logo">🪟</span>
-                    <div class="stock-ticker">MSFT</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=microsoft.com" alt="Microsoft logo" />
                     <div class="stock-name">Microsoft</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'AMZN','Amazon','NASDAQ')">
-                    <span class="stock-logo">📦</span>
-                    <div class="stock-ticker">AMZN</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=amazon.com" alt="Amazon logo" />
                     <div class="stock-name">Amazon</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'NVDA','Nvidia','NASDAQ')">
-                    <span class="stock-logo">🎮</span>
-                    <div class="stock-ticker">NVDA</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=nvidia.com" alt="Nvidia logo" />
                     <div class="stock-name">Nvidia</div>
                 </div>
             </div>
@@ -797,49 +980,40 @@ body::before {
         <div style="margin-bottom:10px;">
             <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; margin-bottom:8px;">🇮🇳 India</div>
             <div class="stock-grid">
-                <div class="stock-card" onclick="selectFromCard(this,'RELIANCE.NS','Reliance','NSE')">
-                    <span class="stock-logo">🛢️</span>
-                    <div class="stock-ticker">RELIANCE</div>
+                <div class="stock-card" onclick="selectFromCard(this,'RELIANCE.NS','Reliance Industries','NSE')">
+                    <img class="stock-logo" src="{% static 'logos/Reliance_Industries_Limited_idVMzpF8wN_1.png' %}" alt="Reliance logo" />
                     <div class="stock-name">Reliance</div>
                 </div>
-                <div class="stock-card" onclick="selectFromCard(this,'TCS.NS','Tata Consult.','NSE')">
-                    <span class="stock-logo">💻</span>
-                    <div class="stock-ticker">TCS</div>
+                <div class="stock-card" onclick="selectFromCard(this,'TCS.NS','Tata Consultancy Services','NSE')">
+                    <img class="stock-logo" src="{% static 'logos/TCS.jpeg' %}" alt="TCS logo" />
                     <div class="stock-name">TCS</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'INFY.NS','Infosys','NSE')">
-                    <span class="stock-logo">🌐</span>
-                    <div class="stock-ticker">INFY</div>
+                    <img class="stock-logo" src="{% static 'logos/infosis.jpeg' %}" alt="Infosys logo" />
                     <div class="stock-name">Infosys</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'HDFCBANK.NS','HDFC Bank','NSE')">
-                    <span class="stock-logo">🏦</span>
-                    <div class="stock-ticker">HDFCBANK</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=hdfcbank.com" alt="HDFC Bank logo" />
                     <div class="stock-name">HDFC Bank</div>
                 </div>
-                <div class="stock-card" onclick="selectFromCard(this,'SBIN.NS','SBI','NSE')">
-                    <span class="stock-logo">🇮🇳</span>
-                    <div class="stock-ticker">SBIN</div>
+                <div class="stock-card" onclick="selectFromCard(this,'SBIN.NS','State Bank of India','NSE')">
+                    <img class="stock-logo" src="{% static 'logos/sbi.svg' %}" alt="SBI logo" />
                     <div class="stock-name">SBI</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'ICICIBANK.NS','ICICI Bank','NSE')">
-                    <span class="stock-logo">🏧</span>
-                    <div class="stock-ticker">ICICIBANK</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=icicibank.com" alt="ICICI Bank logo" />
                     <div class="stock-name">ICICI Bank</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'BAJFINANCE.NS','Bajaj Finance','NSE')">
-                    <span class="stock-logo">💰</span>
-                    <div class="stock-ticker">BAJFINANCE</div>
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=bajajfinserv.in" alt="Bajaj Finance logo" />
                     <div class="stock-name">Bajaj Finance</div>
                 </div>
                 <div class="stock-card" onclick="selectFromCard(this,'MARUTI.NS','Maruti Suzuki','NSE')">
-                    <span class="stock-logo">🚗</span>
-                    <div class="stock-ticker">MARUTI</div>
-                    <div class="stock-name">Maruti</div>
+                    <img class="stock-logo" src="{% static 'logos/maruti_suzuki.jpg' %}" alt="Maruti Suzuki logo" />
+                    <div class="stock-name">Maruti Suzuki</div>
                 </div>
-                <div class="stock-card" onclick="selectFromCard(this,'HINDUNILVR.NS','HUL','NSE')">
-                    <span class="stock-logo">🧴</span>
-                    <div class="stock-ticker">HINDUNILVR</div>
+                <div class="stock-card" onclick="selectFromCard(this,'HINDUNILVR.NS','Hindustan Unilever','NSE')">
+                    <img class="stock-logo" src="https://www.google.com/s2/favicons?sz=128&domain=hul.co.in" alt="HUL logo" />
                     <div class="stock-name">HUL</div>
                 </div>
             </div>
@@ -909,12 +1083,13 @@ body::before {
             </div>
             <div style="text-align:center;">
                 <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;">Signal</div>
-                <div style="font-family:var(--font-mono); font-size:14px; margin-top:3px;
-                    {% if recommendation == 'BUY' %}color:var(--accent);
-                    {% elif recommendation == 'SELL' %}color:var(--danger);
-                    {% else %}color:var(--warning);{% endif %}">
-                    {{ recommendation }}
-                </div>
+                {% if recommendation == 'BUY' %}
+                    <div style="font-family:var(--font-mono); font-size:14px; margin-top:3px; color:var(--accent);">BUY</div>
+                {% elif recommendation == 'SELL' %}
+                    <div style="font-family:var(--font-mono); font-size:14px; margin-top:3px; color:var(--danger);">SELL</div>
+                {% else %}
+                    <div style="font-family:var(--font-mono); font-size:14px; margin-top:3px; color:var(--warning);">HOLD</div>
+                {% endif %}
             </div>
 
 
@@ -984,8 +1159,8 @@ body::before {
         <div class="chart-header">
             <div class="chart-title">Price + Moving Averages — {{ period_label }}</div>
             <div style="display:flex; gap:16px; font-family:var(--font-mono); font-size:11px;">
-                <span style="color:#00e5a0">— Close</span>
-                <span style="color:#0066ff">-- MA20</span>
+                <span style="color:#E6CDB5">— Close</span>
+                <span style="color:#B8553F">-- MA20</span>
                 <span style="color:#ffaa00">-- MA50</span>
             </div>
         </div>
@@ -1019,26 +1194,38 @@ body::before {
 
 
 {% if price_labels %}
+{{ price_labels|json_script:"priceDataLabels" }}
+{{ price_values|json_script:"priceDataValues" }}
+{{ ma20_values|json_script:"ma20DataValues" }}
+{{ ma50_values|json_script:"ma50DataValues" }}
+{{ rsi_values|json_script:"rsiDataValues" }}
+
 <script>
+var labels_raw = JSON.parse(document.getElementById('priceDataLabels').textContent);
+var prices_raw = JSON.parse(document.getElementById('priceDataValues').textContent);
+var ma20_raw   = JSON.parse(document.getElementById('ma20DataValues').textContent);
+var ma50_raw   = JSON.parse(document.getElementById('ma50DataValues').textContent);
+var rsi_raw    = JSON.parse(document.getElementById('rsiDataValues').textContent);
+
 var ctx1 = document.getElementById('priceChart').getContext('2d');
 var gradient = ctx1.createLinearGradient(0, 0, 0, 300);
-gradient.addColorStop(0, 'rgba(0,229,160,0.15)');
-gradient.addColorStop(1, 'rgba(0,229,160,0)');
+gradient.addColorStop(0, 'rgba(34, 211, 238,0.15)');
+gradient.addColorStop(1, 'rgba(34, 211, 238,0)');
 
 new Chart(ctx1, {
     type: 'line',
     data: {
-        labels: {{ price_labels|safe }},
+        labels: labels_raw,
         datasets: [
-            { label: 'Close', data: {{ price_values|safe }}, borderColor: '#00e5a0', backgroundColor: gradient, borderWidth: 2, tension: 0.4, pointRadius: 0, pointHoverRadius: 5, fill: true },
-            { label: 'MA20', data: {{ ma20_values|safe }}, borderColor: '#0066ff', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false },
-            { label: 'MA50', data: {{ ma50_values|safe }}, borderColor: '#ffaa00', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false }
+            { label: 'Close', data: prices_raw, borderColor: '#E6CDB5', backgroundColor: gradient, borderWidth: 2, tension: 0.4, pointRadius: 0, pointHoverRadius: 5, fill: true },
+            { label: 'MA20', data: ma20_raw, borderColor: '#B8553F', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false },
+            { label: 'MA50', data: ma50_raw, borderColor: '#ffaa00', borderWidth: 1.5, borderDash: [4,4], tension: 0.4, pointRadius: 0, fill: false }
         ]
     },
     options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#181c24', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#00e5a0', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12 } },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#262626', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#E6CDB5', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12 } },
         scales: {
             x: { grid: { display: false }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 }, border: { display: false } },
             y: { grid: { color: '#1f2733' }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 } }, border: { display: false } }
@@ -1046,8 +1233,8 @@ new Chart(ctx1, {
     }
 });
 
-var rsiData = {{ rsi_values|safe }};
-var labels  = {{ price_labels|safe }};
+var rsiData = rsi_raw;
+var labels  = labels_raw;
 var ctx2    = document.getElementById('rsiChart').getContext('2d');
 var rsiGrad = ctx2.createLinearGradient(0, 0, 0, 200);
 rsiGrad.addColorStop(0, 'rgba(168,85,247,0.12)');
@@ -1060,13 +1247,13 @@ new Chart(ctx2, {
         datasets: [
             { label: 'RSI', data: rsiData, borderColor: '#a855f7', backgroundColor: rsiGrad, borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true },
             { data: labels.map(() => 65), borderColor: 'rgba(255,68,85,0.4)', borderWidth: 1, borderDash: [6,3], pointRadius: 0, fill: false },
-            { data: labels.map(() => 35), borderColor: 'rgba(0,229,160,0.4)', borderWidth: 1, borderDash: [6,3], pointRadius: 0, fill: false }
+            { data: labels.map(() => 35), borderColor: 'rgba(34, 211, 238,0.4)', borderWidth: 1, borderDash: [6,3], pointRadius: 0, fill: false }
         ]
     },
     options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#181c24', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#a855f7', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12, filter: i => i.datasetIndex === 0 } },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#262626', borderColor: '#1f2733', borderWidth: 1, titleColor: '#5a6478', bodyColor: '#a855f7', titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono', size: 12 }, padding: 12, filter: i => i.datasetIndex === 0 } },
         scales: {
             x: { grid: { display: false }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 }, border: { display: false } },
             y: { min: 0, max: 100, grid: { color: '#1f2733' }, ticks: { color: '#5a6478', font: { family: 'DM Mono', size: 10 }, callback: v => [0,35,50,65,100].includes(v) ? v : '' }, border: { display: false } }
@@ -1074,14 +1261,17 @@ new Chart(ctx2, {
     }
 });
 
-var score = {{ score }};
+var score_raw    = "{{ score }}";
+var tech_raw     = "{{ technical_score }}";
+
+var score = parseFloat(score_raw) || 0;
 var pct   = Math.max(2, Math.min(98, ((score + 1) / 2) * 100));
 var fill  = document.getElementById('meterFill');
 fill.style.background = score > 0.2 ? '#00e5a0' : score < -0.2 ? '#ff4455' : '#ffaa00';
 setTimeout(() => { fill.style.width = pct + '%'; }, 300);
 
 var latestRSI  = rsiData[rsiData.length - 1];
-var techScore  = {{ technical_score }};
+var techScore  = parseFloat(tech_raw) || 0;
 var pillsEl    = document.getElementById('signalPills');
 var pills      = [];
 if (latestRSI < 35)       pills.push(['Oversold RSI',    'bull']);

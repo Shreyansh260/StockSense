@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / '.env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -74,6 +74,9 @@ USE_TZ        = True
 # ── STATIC FILES ──────────────────────────────────────────
 STATIC_URL  = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Use simple storage locally, compressed only in production
 if DEBUG:
